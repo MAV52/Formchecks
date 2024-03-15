@@ -1893,7 +1893,7 @@ public class CheckF11
 
     #region Check046
     
-    //Код ОКПО поставщика/получателя состоит из 8/14 чисел для определенных кодов операции (колонка 19)
+    //Код ОКПО поставщика/получателя состоит из 8/14 чисел для определенных кодов операции (колонка 19) и не равен коду ОКПО отчитывающейся организации
     private static List<CheckError> Check_046(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
@@ -1916,7 +1916,7 @@ public class CheckF11
             });
         }
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
-        var valid = okpoRegex.IsMatch(providerOrRecieverOKPO);
+        var valid = okpoRegex.IsMatch(providerOrRecieverOKPO) && !string.Equals(providerOrRecieverOKPO,okpoRep);
         if (!valid)
         {
             result.Add(new CheckError
