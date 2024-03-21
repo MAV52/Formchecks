@@ -352,8 +352,7 @@ public class CheckF11
         string[] applicableOperationCodes = { "12", "42" };
         var radionuclids = forms[line].Radionuclids_DB;
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var valid = Radionuclids_DB_Valids.Any(nuclid => 
-            radionuclids?.Contains(nuclid, StringComparison.CurrentCultureIgnoreCase) == true);
+        var valid = Radionuclids_DB_Valids.Any(nuclid => nuclid == radionuclids);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1198,7 +1197,7 @@ public class CheckF11
     {
         List<CheckError> result = new();
         string[] creatorOkpoValid = { "прим.", "прим", "примечание", "примечания" };
-        if (!creatorOkpoValid.Contains(forms[line].CreatorOKPO_DB.ToLower())) return result;
+        if (!creatorOkpoValid.Contains(forms[line].CreatorOKPO_DB?.ToLower())) return result;
         var valid = false;
         foreach (var note in notes)
         {
