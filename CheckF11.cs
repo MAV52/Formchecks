@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,12 +8,13 @@ using Models.CheckForm;
 using Models.Collections;
 using Models.Forms;
 using Models.Forms.Form1;
-using OfficeOpenXml;
 
 namespace Client_App.Commands.SyncCommands.CheckForm;
 
-public class CheckF11
+public abstract class CheckF11 : CheckBase
 {
+    #region Properties
+    
     private static readonly string[] OperationCode_DB_Valids =
     {
         "1","10","11","12","15","17","18","21",
@@ -57,108 +58,16 @@ public class CheckF11
         { "PackNumber_DB", "23 - Номер прибора, УКТ, упаковки" },
     };
 
-    public static string[] Type_DB_Valids =
-    {
+    private static string[] Type_DB_Valids = { };
 
-    };
+    private static List<Dictionary<string, string>> OKSM = new();
 
-    private static List<Dictionary<string, string>> OKSM = new()
-    {
-    };
-
-    private static Dictionary<string, double> D = new()
-    {
-    };
-
-    private static bool DB_Ignore = true;
+    private static Dictionary<string, double> D = new();
 
     private static bool ZRI_Ignore = true;
 
-    private static bool MZA_Ignore = true;
-
-    #region DFromFile
-
-    private static void D_Populate_From_File(string file_address)
-    {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        if (!File.Exists(file_address)) return;
-        FileInfo excel_import_file = new(file_address);
-        var xls = new ExcelPackage(excel_import_file);
-        var wrksht1 = xls.Workbook.Worksheets["Лист1"];
-        var i = 2;
-        string name_1, name_2, name_base, name_real;
-        name_base = "аврорий";
-        string value_base;
-        double value_real;
-        D.Clear();
-        while (wrksht1.Cells[i, 1].Text != string.Empty)
-        {
-            name_1 = wrksht1.Cells[i, 2].Text;
-            name_2 = wrksht1.Cells[i, 3].Text;
-            if (name_1 != string.Empty)
-            {
-                name_base = name_1.ToLower();
-            }
-            if (name_2.Contains('-'))
-            {
-                if (name_2.Contains('+'))
-                {
-                    name_real = name_base + name_2[name_2.IndexOf('-')..name_2.IndexOf('+')];
-                }
-                else
-                {
-                    name_real = name_base + name_2[name_2.IndexOf('-')..];
-                }
-                value_base = wrksht1.Cells[i, 4].Text;
-                if (value_base.Contains("Неограниченно"))
-                {
-                    value_real = double.MaxValue;
-                }
-                else
-                {
-                    value_real = 1e12 * double.Parse(value_base[..6].Replace(" ", ""), NumberStyles.Float);
-                }
-                D[name_real] = value_real;
-                if (name_real.Contains("йод"))
-                {
-                    D[name_real.Replace('й', 'и')] = value_real;
-                }
-                else if (name_real.Contains("иод"))
-                {
-                    D[name_real.Replace('и', 'й')] = value_real;
-                }
-            }
-            i++;
-        }
-    }
-
-    #endregion
-
-    #region OKSMFromFile
-
-    private static void OKSM_Populate_From_File(string fileAddress)
-    {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        if (!File.Exists(fileAddress)) return;
-        FileInfo excel_import_file = new(fileAddress);
-        var xls = new ExcelPackage(excel_import_file);
-        var wrksht1 = xls.Workbook.Worksheets["Лист1"];
-        var i = 8;
-        OKSM.Clear();
-        while (wrksht1.Cells[i, 1].Text != string.Empty)
-        {
-            OKSM.Add(new Dictionary<string, string>
-            {
-                {"kod", wrksht1.Cells[i, 2].Text},
-                {"shortname", wrksht1.Cells[i, 3].Text},
-                {"longname", wrksht1.Cells[i, 4].Text},
-                {"alpha2", wrksht1.Cells[i, 5].Text},
-                {"alpha3", wrksht1.Cells[i, 6].Text}
-            });
-            i++;
-        }
-    }
-
+    private static bool MZA_Ignore = true; 
+    
     #endregion
 
     #region CheckTotal
@@ -352,7 +261,8 @@ public class CheckF11
         string[] applicableOperationCodes = { "12", "42" };
         var radionuclids = forms[line].Radionuclids_DB;
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var valid = Radionuclids_DB_Valids.Any(nuclid => nuclid == radionuclids);
+        var valid = Radionuclids_DB_Valids.Any(nuclid => 
+            radionuclids?.Contains(nuclid, StringComparison.CurrentCultureIgnoreCase) == true);
         if (!valid)
         {
             result.Add(new CheckError
@@ -403,45 +313,10 @@ public class CheckF11
     private static List<CheckError> Check_007(List<Form11> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
+        const byte graphNumber = 2;
         string[] applicableOperationCodes = { "29", "39", "97", "98", "99" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var valid = false;
-        foreach (var note in notes)
-        {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-            var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-            List<int> noteRowsFinalInt = new();
-            List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-            foreach (var noteRowCluster in noteRowsRealStr)
-            {
-                if (noteRowCluster.Contains('-'))
-                {
-                    var noteRowBounds = noteRowCluster.Split('-');
-                    if (noteRowBounds.Length != 2
-                        || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                        || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                    for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                    {
-                        noteRowsFinalInt.Add(i);
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                    {
-                        noteRowsFinalInt.Add(noteRowClusterInt);
-                    }
-                }
-            }
-            if (noteRowsFinalInt.Any(noteRowNumber => 
-                    noteRowNumber == line + 1 
-                    && note.GraphNumber_DB == 2.ToString() 
-                    && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-            {
-                valid = true;
-                break;
-            }
-        }
+        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -902,10 +777,7 @@ public class CheckF11
                     valid = false;
                     break;
                 }
-                else
-                {
-                    radionuclidsValidFull.Remove(radionuclidFact);
-                }
+                radionuclidsValidFull.Remove(radionuclidFact);
             }
             valid = radionuclidsValidFull.Count == 0;
         }
@@ -1007,6 +879,7 @@ public class CheckF11
     #endregion
 
     #region Check025
+
     private static List<CheckError> Check_025(List<Form11> forms, int line)
     {
         List<CheckError> result = new();
@@ -1114,7 +987,7 @@ public class CheckF11
             .Replace(")", "");
         if (!double.TryParse(activity,
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
-                CultureInfo.CreateSpecificCulture("en-GB"),
+                CultureInfo.CreateSpecificCulture("ru-RU"),
                 out var activityReal)
             || activity.Contains('-')
             || activityReal is <= 0 or > 10e+20)
@@ -1198,42 +1071,8 @@ public class CheckF11
         List<CheckError> result = new();
         string[] creatorOkpoValid = { "прим.", "прим", "примечание", "примечания" };
         if (!creatorOkpoValid.Contains(forms[line].CreatorOKPO_DB?.ToLower())) return result;
-        var valid = false;
-        foreach (var note in notes)
-        {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-            var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-            List<int> noteRowsFinalInt = new();
-            List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-            foreach (var noteRowCluster in noteRowsRealStr)
-            {
-                if (noteRowCluster.Contains('-'))
-                {
-                    var noteRowBounds = noteRowCluster.Split('-');
-                    if (noteRowBounds.Length != 2
-                        || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                        || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                    for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                    {
-                        noteRowsFinalInt.Add(i);
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                    {
-                        noteRowsFinalInt.Add(noteRowClusterInt);
-                    }
-                }
-            }
-            if (noteRowsFinalInt.Any(noteRowNumber =>
-                    noteRowNumber == line + 1
-                    && note.GraphNumber_DB == 10.ToString()
-                    && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-            {
-                valid = true;
-            }
-        }
+        const byte graphNumber = 10;
+        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1341,7 +1180,7 @@ public class CheckF11
             var dMaxValue = dValueList.Max();
             valid = double.TryParse(activity!.Replace(".", ","), 
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands, 
-                CultureInfo.CreateSpecificCulture("en-GB"),
+                CultureInfo.CreateSpecificCulture("ru-RU"),
                 out var aValue);
             if (valid)
             {
@@ -1515,6 +1354,7 @@ public class CheckF11
     {
         List<CheckError> result = new();
         byte?[] propertyCodeValid = { 6 };
+        const byte graphNumber = 15;
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
         if (!propertyCodeValid.Contains(propertyCode)) return result;
@@ -1531,43 +1371,7 @@ public class CheckF11
             });
             return result;
         }
-        var valid = false;
-        foreach (var note in notes)
-        {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-            var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-            List<int> noteRowsFinalInt = new();
-            List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-            foreach (var noteRowCluster in noteRowsRealStr)
-            {
-                if (noteRowCluster.Contains('-'))
-                {
-                    var noteRowBounds = noteRowCluster.Split('-');
-                    if (noteRowBounds.Length != 2
-                        || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                        || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                    for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                    {
-                        noteRowsFinalInt.Add(i);
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                    {
-                        noteRowsFinalInt.Add(noteRowClusterInt);
-                    }
-                }
-            }
-            if (noteRowsFinalInt.Any(noteRowNumber => 
-                    noteRowNumber == line + 1 
-                    && note.GraphNumber_DB == 15.ToString() 
-                    && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-            {
-                valid = true;
-                break;
-            }
-        }
+        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1590,6 +1394,7 @@ public class CheckF11
     private static List<CheckError> Check_039(List<Form11> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
+        const byte graphNumber = 15;
         short?[] propertyCodeValid = { 9 };
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
@@ -1609,43 +1414,7 @@ public class CheckF11
             });
             return result;
         }
-        var valid = false;
-        foreach (var note in notes)
-        {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-            var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-            List<int> noteRowsFinalInt = new();
-            List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-            foreach (var noteRowCluster in noteRowsRealStr)
-            {
-                if (noteRowCluster.Contains('-'))
-                {
-                    var noteRowBounds = noteRowCluster.Split('-');
-                    if (noteRowBounds.Length != 2
-                        || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                        || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                    for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                    {
-                        noteRowsFinalInt.Add(i);
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                    {
-                        noteRowsFinalInt.Add(noteRowClusterInt);
-                    }
-                }
-            }
-            if (noteRowsFinalInt.Any(noteRowNumber => 
-                    noteRowNumber == line + 1 
-                    && note.GraphNumber_DB == 15.ToString() 
-                    && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-            {
-                valid = true;
-                break;
-            }
-        }
+        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1670,6 +1439,7 @@ public class CheckF11
         List<CheckError> result = new();
         byte?[] documentVidValid = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19 };
         byte?[] documentVidValidFor10 = { 1 };
+        const byte graphNumber = 16;
         var documentVid = forms[line].DocumentVid_DB;
         var valid = forms[line].OperationCode_DB == "10" 
             ? documentVidValidFor10.Contains(documentVid) 
@@ -1688,43 +1458,7 @@ public class CheckF11
         }
         if (documentVid is 19)
         {
-            valid = false;
-            foreach (var note in notes)
-            {
-                if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-                var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-                List<int> noteRowsFinalInt = new();
-                List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-                foreach (var noteRowCluster in noteRowsRealStr)
-                {
-                    if (noteRowCluster.Contains('-'))
-                    {
-                        var noteRowBounds = noteRowCluster.Split('-');
-                        if (noteRowBounds.Length != 2
-                            || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                            || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                        for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                        {
-                            noteRowsFinalInt.Add(i);
-                        }
-                    }
-                    else
-                    {
-                        if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                        {
-                            noteRowsFinalInt.Add(noteRowClusterInt);
-                        }
-                    }
-                }
-                if (noteRowsFinalInt.Any(noteRowNumber => 
-                        noteRowNumber == line + 1 
-                        && note.GraphNumber_DB == 16.ToString() 
-                        && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-                {
-                    valid = true;
-                    break;
-                }
-            }
+            valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         }
         if (!valid)
         {
@@ -1748,7 +1482,8 @@ public class CheckF11
     private static List<CheckError> Check_041(List<Form11> forms, int line)
     {
         List<CheckError> result = new();
-        var valid = !string.IsNullOrWhiteSpace(forms[line].DocumentNumber_DB);
+        var documentNumber = forms[line].DocumentNumber_DB;
+        var valid = !string.IsNullOrWhiteSpace(documentNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1756,7 +1491,7 @@ public class CheckF11
                 FormNum = "form_11",
                 Row = (line + 1).ToString(),
                 Column = "DocumentNumber_DB",
-                Value = forms[line].DocumentNumber_DB,
+                Value = documentNumber,
                 Message = "Формат ввода данных не соответствует приказу."
             });
         }
@@ -1892,7 +1627,7 @@ public class CheckF11
 
     #region Check046
     
-    //Код ОКПО поставщика/получателя состоит из 8/14 чисел для определенных кодов операции (колонка 19) и не равен коду ОКПО отчитывающейся организации
+    //Код ОКПО поставщика/получателя состоит из 8/14 чисел для определенных кодов операции (колонка 19)
     private static List<CheckError> Check_046(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
@@ -1915,7 +1650,7 @@ public class CheckF11
             });
         }
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
-        var valid = okpoRegex.IsMatch(providerOrRecieverOKPO) && !string.Equals(providerOrRecieverOKPO,okpoRep);
+        var valid = okpoRegex.IsMatch(providerOrRecieverOKPO);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1967,6 +1702,7 @@ public class CheckF11
     private static List<CheckError> Check_048(List<Form11> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
+        const byte graphNumber = 19;
         string[] applicableOperationCodes = { "81", "82", "83", "84", "85", "86", "87", "88" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
@@ -1984,43 +1720,7 @@ public class CheckF11
                 Message = "Формат ввода данных не соответствует приказу."
             });
         }
-        valid = false;
-        foreach (var note in notes)
-        {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
-            var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
-            List<int> noteRowsFinalInt = new();
-            List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
-            foreach (var noteRowCluster in noteRowsRealStr)
-            {
-                if (noteRowCluster.Contains('-'))
-                {
-                    var noteRowBounds = noteRowCluster.Split('-');
-                    if (noteRowBounds.Length != 2
-                        || !int.TryParse(noteRowBounds[0], out var noteRowsBegin)
-                        || !int.TryParse(noteRowBounds[1], out var noteRowsEnd)) continue;
-                    for (var i = noteRowsBegin; i <= noteRowsEnd; i++)
-                    {
-                        noteRowsFinalInt.Add(i);
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(noteRowCluster, out var noteRowClusterInt))
-                    {
-                        noteRowsFinalInt.Add(noteRowClusterInt);
-                    }
-                }
-            }
-            if (noteRowsFinalInt.Any(noteRowNumber => 
-                    noteRowNumber == line + 1 
-                    && note.GraphNumber_DB == 19.ToString() 
-                    && !string.IsNullOrWhiteSpace(note.Comment_DB)))
-            {
-                valid = true;
-                break;
-            }
-        }
+        valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
