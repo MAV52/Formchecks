@@ -703,7 +703,12 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_023(List<Form12> forms, int line)
     {
         List<CheckError> result = new();
-        var valid = !string.IsNullOrWhiteSpace(forms[line].Mass_DB);
+        double mass_true = 0.0;
+        double.TryParse(forms[line].Mass_DB.Replace('.', ','),
+            NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
+            CultureInfo.CreateSpecificCulture("ru-RU"),
+            out mass_true);
+        var valid = !string.IsNullOrWhiteSpace(forms[line].Mass_DB) && mass_true > 0.0;
         if (!valid)
         {
             result.Add(new CheckError
@@ -1111,7 +1116,8 @@ public class CheckF12 : CheckBase
         var documentVid = forms[line].DocumentVid_DB;
         var valid = documentVidValid.Contains(documentVid)
             && (forms[line].OperationCode_DB == "66" ? documentVid == 13 : true)
-            && (forms[line].OperationCode_DB == "19" ? CheckNotePresence(new List<Form>(forms), notes, line, 13) : true);
+            && (forms[line].OperationCode_DB == "10" ? documentVid == 1 : true)
+            && (documentVid == 19 ? CheckNotePresence(new List<Form>(forms), notes, line, 13) : true);
         if (!valid)
         {
             result.Add(new CheckError

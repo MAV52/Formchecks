@@ -1393,14 +1393,28 @@ public abstract class CheckF13 : CheckBase
                     && !providerOrRecieverOKPO.Equals("россия", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
-            result.Add(new CheckError
+            if (providerOrRecieverOKPO == "-")
             {
-                FormNum = "form_13",
-                Row = (line + 1).ToString(),
-                Column = "ProviderOrRecieverOKPO_DB",
-                Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу."
-            });
+                result.Add(new CheckError
+                {
+                    FormNum = "form_13",
+                    Row = (line + 1).ToString(),
+                    Column = "ProviderOrRecieverOKPO_DB",
+                    Value = Convert.ToString(providerOrRecieverOKPO),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Значение не может быть \"-\"."
+                });
+            }
+            else
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_13",
+                    Row = (line + 1).ToString(),
+                    Column = "ProviderOrRecieverOKPO_DB",
+                    Value = Convert.ToString(providerOrRecieverOKPO),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу."
+                });
+            }
         }
         valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)

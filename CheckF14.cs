@@ -575,6 +575,19 @@ public abstract class CheckF14 : CheckBase
                 Value = Convert.ToString(name),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
+            return result;
+        }
+        valid = name != "-";
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_14",
+                Row = (line + 1).ToString(),
+                Column = "Name_DB",
+                Value = Convert.ToString(name),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть \"-\"."
+            });
         }
         return result;
     }
@@ -848,6 +861,19 @@ public abstract class CheckF14 : CheckBase
                 Column = "Volume_DB",
                 Value = Convert.ToString(volume),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа не может быть пустой. Укажите оценочное значение объема ОРИ в круглых скобках."
+            });
+            return result;
+        }
+        valid = volume != "-";
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_14",
+                Row = (line + 1).ToString(),
+                Column = "Volume_DB",
+                Value = Convert.ToString(volume),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа не может быть \"-\". Укажите оценочное значение объема ОРИ в круглых скобках."
             });
         }
         return result;
