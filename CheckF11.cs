@@ -907,7 +907,7 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "FactoryNumber_DB",
                 Value = factoryNum,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Радионуклиды должны быть разделены точкой с запятой"
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Номера ЗРИ должны быть разделены точкой с запятой"
             });
         }
         return result;
@@ -1567,11 +1567,7 @@ public abstract class CheckF11 : CheckBase
         byte?[] documentVidValid = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19 };
         const byte graphNumber = 16;
         var documentVid = forms[line].DocumentVid_DB;
-        var valid = documentVidValid.Contains(documentVid)
-            && (forms[line].OperationCode_DB == "41" ? documentVid == 1 : true)
-            && (forms[line].OperationCode_DB == "66" ? documentVid == 13 : true)
-            && (forms[line].OperationCode_DB == "81" ? documentVid == 3 : true)
-            && (forms[line].OperationCode_DB == "85" ? documentVid == 3 : true);
+        var valid = documentVidValid.Contains(documentVid);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1584,19 +1580,40 @@ public abstract class CheckF11 : CheckBase
             });
             return result;
         }
-        if (documentVid is 19)
-        {
-            valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
-        }
+        valid = forms[line].OperationCode_DB == "10" ? documentVid == 1 : true;
         if (!valid)
         {
             result.Add(new CheckError
             {
-                FormNum = "form_11",
+                FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
-                Value = forms[line].DocumentVid_DB.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде вида документа равном 19, в примечании к ячейке формы должно быть приведено наименование документа."
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции инвентаризации вид документа должен быть равен 1."
+            });
+        }
+        valid = forms[line].OperationCode_DB == "41" ? documentVid == 1 : true;
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции 41 вид документа должен быть равен 1."
+            });
+        }
+        valid = forms[line].OperationCode_DB == "66" ? documentVid == 13 : true;
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции 66 вид документа должен быть равен 13."
             });
         }
         return result;

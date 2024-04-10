@@ -935,7 +935,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = owner,
+                Value = propertyCode,
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование субъекта Российской Федерации, в собственности которого находится объект учета."
             });
         }
@@ -963,7 +963,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = owner,
+                Value = propertyCode,
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование муниципального образования, в собственности которого находится объект учета."
             });
         }
@@ -991,7 +991,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = owner,
+                Value = propertyCode,
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
             });
         }
@@ -1113,10 +1113,7 @@ public class CheckF12 : CheckBase
         List<CheckError> result = new();
         short?[] documentVidValid = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19 };
         var documentVid = forms[line].DocumentVid_DB;
-        var valid = documentVidValid.Contains(documentVid)
-            && (forms[line].OperationCode_DB == "66" ? documentVid == 13 : true)
-            && (forms[line].OperationCode_DB == "10" ? documentVid == 1 : true)
-            && (documentVid == 19 ? CheckNotePresence(new List<Form>(forms), notes, line, 13) : true);
+        var valid = documentVidValid.Contains(documentVid);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1126,6 +1123,42 @@ public class CheckF12 : CheckBase
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Необходимо указать вид документа в соответствии с таблицей 3 приложения № 2 к приказу Госкорпорации \"Росатом\" от 07.12.2020 № 1/13-НПА."
+            });
+        }
+        valid = (documentVid == 19 ? CheckNotePresence(new List<Form>(forms), notes, line, 13) : true);
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать примечание к указанному виду документа."
+            });
+        }
+        valid = forms[line].OperationCode_DB == "10" ? documentVid == 1 : true;
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции инвентаризации вид документа должен быть равен 1."
+            });
+        }
+        valid = forms[line].OperationCode_DB == "66" ? documentVid == 13 : true;
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции 66 вид документа должен быть равен 13."
             });
         }
         return result;
