@@ -18,7 +18,7 @@ public abstract class CheckF11 : CheckBase
 
     private static readonly string[] OperationCode_DB_Valids =
     {
-        "1","10","11","12","15","17","18","21",
+        "10","11","12","15","17","18","21",
         "22","25","27","28","29","31","32","35",
         "37","38","39","41","42","43","46","47","53",
         "54","58","61","62","63","64","65","66",
@@ -192,7 +192,7 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_002(List<Form11> forms, int line)
     {
         List<CheckError> result = new();
-        if (forms[line].NumberInOrder_DB < 1)
+        if (forms[line].NumberInOrder_DB != line + 1)
         {
             result.Add(new CheckError
             {
@@ -568,7 +568,7 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_016(List<Form11> forms, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "81", "88" };
+        string[] applicableOperationCodes = { "81", "82", "87", "88" };
         var operationCode = forms[line].OperationCode_DB;
         var сreatorOKPO = forms[line].CreatorOKPO_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
@@ -598,8 +598,8 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "83", "84", "85", "86" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var valid = OKSM.All(oksmEntry => oksmEntry["shortname"] != forms[line].CreatorOKPO_DB)
-                    || forms[line].CreatorOKPO_DB.ToLower() is "россия";
+        var valid = !(OKSM.All(oksmEntry => oksmEntry["shortname"] != forms[line].CreatorOKPO_DB)
+                    || forms[line].CreatorOKPO_DB.ToLower() is "россия");
         if (!valid)
         {
             result.Add(new CheckError
@@ -866,7 +866,7 @@ public abstract class CheckF11 : CheckBase
     {
         List<CheckError> result = new();
         var radionuclids = forms[line].Radionuclids_DB;
-        var valid = !string.IsNullOrEmpty(radionuclids);
+        var valid = !string.IsNullOrEmpty(radionuclids) || string.Equals(radionuclids,"-");
         if (!valid)
         {
             result.Add(new CheckError
@@ -1531,31 +1531,17 @@ public abstract class CheckF11 : CheckBase
 
     #region Check044
 
-    //Если код формы собственности 9, то должно быть примечание, а правообладатель (колонка 15) из ОКСМ или 8/14 цифр
+    //Если код формы собственности 9, то должно быть примечание и значение "прим."
     private static List<CheckError> Check_044(List<Form11> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
+        string[] creatorOkpoValid = { "прим.", "прим", "примечание", "примечания" };
         const byte graphNumber = 15;
         short?[] propertyCodeValid = { 9 };
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
         if (!propertyCodeValid.Contains(propertyCode)) return result;
-        var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
-        if ((OKSM.All(oksmEntry => oksmEntry["shortname"] != owner)
-            || owner.Equals("россия", StringComparison.CurrentCultureIgnoreCase))
-            && !okpoRegex.IsMatch(owner))
-        {
-            result.Add(new CheckError
-            {
-                FormNum = "form_11",
-                Row = (line + 1).ToString(),
-                Column = "Owner_DB",
-                Value = owner,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ЗРИ."
-            });
-            return result;
-        }
-        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber) && creatorOkpoValid.Contains(owner?.ToLower());
         if (!valid)
         {
             result.Add(new CheckError
@@ -1583,6 +1569,7 @@ public abstract class CheckF11 : CheckBase
         var documentVid = forms[line].DocumentVid_DB;
         var valid = documentVidValid.Contains(documentVid)
             && (forms[line].OperationCode_DB == "41" ? documentVid == 1 : true)
+            && (forms[line].OperationCode_DB == "66" ? documentVid == 13 : true)
             && (forms[line].OperationCode_DB == "81" ? documentVid == 3 : true)
             && (forms[line].OperationCode_DB == "85" ? documentVid == 3 : true);
         if (!valid)
@@ -1739,7 +1726,7 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_050(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "47", "53", "58", "61", "62", "65", "67", "68", "71", "72", "73", "74", "75", "76", "97", "98", "99" };
+        string[] applicableOperationCodes = { "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "47", "58", "61", "62", "65", "67", "68", "71", "72", "73", "74", "75", "76", "97", "98", "99" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
@@ -1772,7 +1759,7 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_051(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39" };
+        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39", "63", "64" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)

@@ -140,7 +140,7 @@ public abstract class CheckF13 : CheckBase
     private static List<CheckError> Check_002(List<Form13> forms, int line)
     {
         List<CheckError> result = new();
-        if (forms[line].NumberInOrder_DB < 1)
+        if (forms[line].NumberInOrder_DB != line + 1)
         {
             result.Add(new CheckError
             {
@@ -350,7 +350,7 @@ public abstract class CheckF13 : CheckBase
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         var okpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB) ? forms10[1].Okpo_DB : forms10[0].Okpo_DB;
-        string[] applicableOperationCodes = { "53" };
+        string[] applicableOperationCodes = { "54" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = !string.IsNullOrWhiteSpace(providerOrRecieverOKPO) && !providerOrRecieverOKPO.Equals(okpo);
         if (!valid)

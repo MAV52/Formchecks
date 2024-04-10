@@ -222,7 +222,6 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_006(List<Form12> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
-        if (DB_Ignore) return result;
         const byte graphNumber = 2;
         string[] applicableOperationCodes = { "29", "39", "97", "98", "99" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
@@ -1276,7 +1275,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО отчитывающейся организации."
             });
         }
         return result;
@@ -1289,7 +1288,7 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_044(List<Form12> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39", "54", "66" };
+        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39", "54" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         var okpoRep = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
@@ -1481,7 +1480,7 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_051(List<Form12> forms, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "21", "25", "27", "28", "29", "31", "32", "35", "36", "37", "38", "39", "61", "62", "81", "82", "83", "84", "85", "86", "87", "88" };
+        string[] applicableOperationCodes = { "21", "25", "27", "28", "29", "31", "35", "36", "37", "38", "39", "61", "62", "81", "82", "83", "84", "85", "86", "87", "88" };
         var operationCode = forms[line].OperationCode_DB;
         var transporterOKPO = forms[line].TransporterOKPO_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;

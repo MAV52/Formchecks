@@ -141,7 +141,7 @@ public abstract class CheckF14 : CheckBase
     private static List<CheckError> Check_002(List<Form14> forms, int line)
     {
         List<CheckError> result = new();
-        if (forms[line].Id < 1)
+        if (forms[line].NumberInOrder_DB != line + 1)
         {
             result.Add(new CheckError
             {
