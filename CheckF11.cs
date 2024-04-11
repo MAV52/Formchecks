@@ -27,6 +27,11 @@ public abstract class CheckF11 : CheckBase
         "98","99"
     };
 
+    private static readonly string[] OperationCode_DB_Check018 =
+    {
+        "11", "12", "15", "28", "38", "41", "63", "64", "65", "73", "81", "85", "88"
+    };  //заслужили собственную константу т.к. используется в нескольких проверках (18, 41, 42 и 43).
+
     private static readonly string[] Radionuclids_DB_Valids =
     {
         "плутоний","уран-233","уран-235","нептуний-237","америций-241","америций-243","калифорний-252","торий","литий-6","тритий"
@@ -327,7 +332,7 @@ public abstract class CheckF11 : CheckBase
                 FormNum = "form_11",
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
-                Value = "-",
+                Value = forms[line].OperationCode_DB,
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо дать пояснение об осуществленной операции."
             });
         }
@@ -582,7 +587,7 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreatorOKPO_DB",
                 Value = forms[line].CreatorOKPO_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Код используется для предоставления сведений о ЗРИ, произведенных в Российской Федерации."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Код используется для предоставления сведений о ЗРИ, произведенных в Российской Федерации. Необходимо ввести ОКПО организации."
             });
         }
         return result;
@@ -621,14 +626,13 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_018(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "11", "12", "15", "28", "38", "41", "63", "64", "65", "73", "81", "85", "88" };
         var operationCode = forms[line].OperationCode_DB;
-        if (!applicableOperationCodes.Contains(operationCode)) return result;
+        if (!OperationCode_DB_Check018.Contains(operationCode)) return result;
         var okpoRep = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
         var owner = forms[line].Owner_DB;
-        var valid = !string.IsNullOrEmpty(owner)
+        var valid = !string.IsNullOrWhiteSpace(owner)
                     && owner == okpoRep;
         if (!valid)
         {
@@ -866,7 +870,7 @@ public abstract class CheckF11 : CheckBase
     {
         List<CheckError> result = new();
         var radionuclids = forms[line].Radionuclids_DB;
-        var valid = !string.IsNullOrEmpty(radionuclids) || string.Equals(radionuclids,"-");
+        var valid = !string.IsNullOrEmpty(radionuclids) || string.Equals(radionuclids, "-");
         if (!valid)
         {
             result.Add(new CheckError
@@ -905,8 +909,8 @@ public abstract class CheckF11 : CheckBase
             {
                 FormNum = "form_11",
                 Row = (line + 1).ToString(),
-                Column = "FactoryNumber_DB",
-                Value = factoryNum,
+                Column = "Quantity_DB",
+                Value = quantity?.ToString(),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Номера ЗРИ должны быть разделены точкой с запятой"
             });
         }
@@ -1130,6 +1134,9 @@ public abstract class CheckF11 : CheckBase
     {
         List<CheckError> result = new();
         string[] creatorOkpoValid = { "прим.", "прим", "примечание", "примечания" };
+        string[] applicableOperationCodes = { "81", "82", "87", "88" };
+        var operationCode = forms[line].OperationCode_DB;
+        if (applicableOperationCodes.Contains(operationCode)) return result;
         if (!creatorOkpoValid.Contains(forms[line].CreatorOKPO_DB?.ToLower()) && OKSM.All(oksmEntry => oksmEntry["shortname"] != forms[line].CreatorOKPO_DB)) return result;
         const byte graphNumber = 10;
         var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -1404,7 +1411,7 @@ public abstract class CheckF11 : CheckBase
                 FormNum = "form_11",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = owner.ToString(),
+                Value = propertyCode.ToString(),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ЗРИ"
             });
         }
@@ -1427,6 +1434,7 @@ public abstract class CheckF11 : CheckBase
         var operationCode = forms[line].OperationCode_DB;
         var owner = forms[line].Owner_DB;
         var propertyCode = forms[line].PropertyCode_DB;
+        if (OperationCode_DB_Check018.Contains(operationCode)) return result;
 
         if (applicableOperationCodes.Contains(operationCode) && okpoRep != owner)
         {
@@ -1469,6 +1477,8 @@ public abstract class CheckF11 : CheckBase
         byte?[] propertyCodeValid = { 5 };
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
+        var operationCode = forms[line].OperationCode_DB;
+        if (OperationCode_DB_Check018.Contains(operationCode)) return result;
         if (!propertyCodeValid.Contains(propertyCode)) return result;
         var valid = OKSM.Any(oksmEntry => oksmEntry["shortname"] == owner)
                     && !owner.Equals("россия", StringComparison.CurrentCultureIgnoreCase);
@@ -1498,6 +1508,8 @@ public abstract class CheckF11 : CheckBase
         const byte graphNumber = 15;
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
+        var operationCode = forms[line].OperationCode_DB;
+        if (OperationCode_DB_Check018.Contains(operationCode)) return result;
         if (!propertyCodeValid.Contains(propertyCode)) return result;
         if (OKSM.All(oksmEntry => oksmEntry["shortname"] != owner)
             || owner.Equals("россия", StringComparison.CurrentCultureIgnoreCase))
@@ -1538,10 +1550,25 @@ public abstract class CheckF11 : CheckBase
         string[] creatorOkpoValid = { "прим.", "прим", "примечание", "примечания" };
         const byte graphNumber = 15;
         short?[] propertyCodeValid = { 9 };
+        string[] nonapplicableOperationCodes = { "11", "12", "15", "28", "38", "41", "63", "64", "65", "73", "81", "85", "88" }; //взяты из Check_018
         var propertyCode = forms[line].PropertyCode_DB;
         var owner = forms[line].Owner_DB;
+        var operationCode = forms[line].OperationCode_DB;
+        if (nonapplicableOperationCodes.Contains(operationCode)) return result;
         if (!propertyCodeValid.Contains(propertyCode)) return result;
-        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber) && creatorOkpoValid.Contains(owner?.ToLower());
+        var valid = creatorOkpoValid.Contains(owner?.ToLower());
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_11",
+                Row = (line + 1).ToString(),
+                Column = "Owner_DB",
+                Value = owner,
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать \"прим.\" и добавить соответствующее примечание с наименованием и адресом правообладателя (собственника или обладателя иного вещного права) на ЗРИ."
+            });
+        }
+        valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError

@@ -18,7 +18,7 @@ public class CheckF12 : CheckBase
     {
         "10","11","12","17","18","21",
         "22","25","27","28","29","31","32","35",
-        "37","38","39","41","42","46",
+        "37","38","39","41","42","43","46",
         "53","54","58","61","62","63","64",
         "66","67","68","71","72","73","74","75",
         "81","82","83","84","85","86","87","88",
@@ -294,7 +294,6 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_010(List<Form12> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        if (DB_Ignore) return result;
         string[] applicableOperationCodes = { "53" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
@@ -604,18 +603,7 @@ public class CheckF12 : CheckBase
                     && DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
                     && DateTime.TryParse(documentDate, out pMid)
                     && pMid >= pStart && pMid <= pEnd;
-        if (!valid)
-        {
-            result.Add(new CheckError
-            {
-                FormNum = "form_12",
-                Row = (line + 1).ToString(),
-                Column = "DocumentDate_DB",
-                Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата акта инвентаризации не входит в отчетный период."
-            });
-        }
-        else if ((pEnd - pMid).Days > 10)
+        if ((pEnd - pMid).Days > 10)
         {
             result.Add(new CheckError
             {
@@ -623,7 +611,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationDate_DB",
                 Value = operationDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату операции более чем на 10 дней."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату документа более чем на 10 дней."
             });
         }
         return result;
@@ -730,6 +718,7 @@ public class CheckF12 : CheckBase
     {
         List<CheckError> result = new();
         var Mass_DB = forms[line].Mass_DB;
+        if (string.IsNullOrWhiteSpace(forms[line].Mass_DB)) return result;
         var valid = double.TryParse(Mass_DB.Replace('.', ','),
             NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
             CultureInfo.CreateSpecificCulture("ru-RU"),
@@ -935,7 +924,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = propertyCode,
+                Value = propertyCode?.ToString(),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование субъекта Российской Федерации, в собственности которого находится объект учета."
             });
         }
@@ -963,7 +952,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = propertyCode,
+                Value = propertyCode?.ToString(),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование муниципального образования, в собственности которого находится объект учета."
             });
         }
@@ -991,7 +980,7 @@ public class CheckF12 : CheckBase
                 FormNum = "form_12",
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
-                Value = propertyCode,
+                Value = propertyCode?.ToString(),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
             });
         }
@@ -1286,7 +1275,7 @@ public class CheckF12 : CheckBase
         string[] applicableOperationCodes = {
             "10", "11",
             "12", "15", "17", "18", "41", "42",
-            "46", "53", "58", "61", "62",
+            "46", "58", "61", "62",
             "67", "68", "71", "72",
             "73", "75", "97", "98",
             "99" };
@@ -1321,7 +1310,7 @@ public class CheckF12 : CheckBase
     private static List<CheckError> Check_044(List<Form12> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39", "54" };
+        string[] applicableOperationCodes = { "25", "27", "28", "29", "35", "37", "38", "39" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         var okpoRep = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)

@@ -109,6 +109,8 @@ public abstract class CheckF13 : CheckBase
             errorList.AddRange(Check_055(formsList, notes, currentFormLine));
             errorList.AddRange(Check_056(formsList, currentFormLine));
             errorList.AddRange(Check_057(formsList, currentFormLine));
+            errorList.AddRange(Check_058(formsList, currentFormLine));
+            errorList.AddRange(Check_059(formsList, currentFormLine));
             currentFormLine++;
         }
         var index = 0;
@@ -166,7 +168,7 @@ public abstract class CheckF13 : CheckBase
         var operationCodeValid = new[]
         {
             "10", "11", "12", "15", "17", "18", "21", "22", "25", "27", "28", "29", "31", "32", "35", "37", "38", "39",
-            "41", "42", "43", "46", "47", "53", "54", "58", "61", "62", "63", "64", "65", "67", "68", "71", "72", "73",
+            "41", "42", "43", "46", "47", "48", "53", "54", "58", "61", "62", "63", "64", "65", "67", "68", "71", "72", "73",
             "74", "75", "81", "82", "83", "84", "85", "86", "87", "88", "97", "98", "99"
         };
         var valid = operationCode != null && operationCodeValid.Contains(operationCode);
@@ -212,7 +214,7 @@ public abstract class CheckF13 : CheckBase
             "америций-241", "америций 243", "калифорний-252", "торий-232", "литий-6", "дейтерий", "тритий"
         };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
-        var valid = radionuclid != null && radionuclidValid.Any(nuclid => string.Equals(nuclid, radionuclid, StringComparison.CurrentCultureIgnoreCase));
+        var valid = radionuclid != null && radionuclidValid.Any(nuclid => radionuclid.ToLower().Contains(nuclid));
         if (!valid)
         {
             result.Add(new CheckError
@@ -349,7 +351,9 @@ public abstract class CheckF13 : CheckBase
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
-        var okpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB) ? forms10[1].Okpo_DB : forms10[0].Okpo_DB;
+        var okpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
+            ? forms10[1].Okpo_DB
+            : forms10[0].Okpo_DB;
         string[] applicableOperationCodes = { "54" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = !string.IsNullOrWhiteSpace(providerOrRecieverOKPO) && !providerOrRecieverOKPO.Equals(okpo);
@@ -707,7 +711,12 @@ public abstract class CheckF13 : CheckBase
     {
         List<CheckError> result = new();
         var radionuclids = forms[line].Radionuclids_DB;
-        var radArray = radionuclids.Replace(" ", string.Empty).ToLower().Split(';');
+        if (string.IsNullOrWhiteSpace(radionuclids)) return result;
+        var radArray = radionuclids.Replace(" ", string.Empty).ToLower()
+            .Replace(" ", "")
+            .Replace(',', ';')
+            .Split(';');
+        if (radArray.Length == 1 && string.Equals(radArray[0], "-")) return result;
         var valid = radArray.All(rad => R.Any(phEntry => phEntry["name"] == rad));
         if (!valid)
         {
@@ -1162,6 +1171,18 @@ public abstract class CheckF13 : CheckBase
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Необходимо указать вид документа в соответствии с таблицей 3 приложения №2 к приказу Госкорпорации \"Росатом\" от 07.12.2020 №1/13-НПА."
             });
         }
+        valid = forms[line].OperationCode_DB == "10" ? documentVid == 1 : true;
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции инвентаризации вид документа должен быть равен 1."
+            });
+        }
         return result;
     }
 
@@ -1442,7 +1463,7 @@ public abstract class CheckF13 : CheckBase
         string[] applicableOperationCodes =
         {
             "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "47", "53",
-            "54", "58", "65", "67", "68", "71", "72", "73", "74", "75", "97", "98"
+            "54", "58", "63","64","65", "67", "68", "71", "72", "73", "74", "75", "97", "98"
         };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
         var transporterOKPO = forms[line].TransporterOKPO_DB;

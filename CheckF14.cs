@@ -149,7 +149,7 @@ public abstract class CheckF14 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "NumberInOrder_DB",
                 Value = forms[line].Id.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "-"
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Номера строк должны располагаться по порядку, без пропусков или дублирования номеров"
             });
         }
         return result;
@@ -202,8 +202,8 @@ public abstract class CheckF14 : CheckBase
             "плутоний-238", "плутоний-239", "плутоний-240", "уран-233", "уран-235", "уран-238", "нептуний-237",
             "америций-241", "америций 243", "калифорний-252", "торий-232", "литий-6", "дейтерий", "тритий"
         };
-        if (!applicableOperationCodes.Contains(operationCode)) return result;
-        var valid = radionuclid != null && radionuclidValid.Any(nuclid => string.Equals(nuclid, radionuclid, StringComparison.CurrentCultureIgnoreCase));
+        if (string.IsNullOrWhiteSpace(radionuclid) || !applicableOperationCodes.Contains(operationCode)) return result;
+        var valid = radionuclid != null && radionuclidValid.Any(nuclid => radionuclid.ToLower().Contains(nuclid));
         if (!valid)
         {
             result.Add(new CheckError
@@ -575,19 +575,6 @@ public abstract class CheckF14 : CheckBase
                 Value = Convert.ToString(name),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
-            return result;
-        }
-        valid = name != "-";
-        if (!valid)
-        {
-            result.Add(new CheckError
-            {
-                FormNum = "form_14",
-                Row = (line + 1).ToString(),
-                Column = "Name_DB",
-                Value = Convert.ToString(name),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть \"-\"."
-            });
         }
         return result;
     }
@@ -672,7 +659,12 @@ public abstract class CheckF14 : CheckBase
     {
         List<CheckError> result = new();
         var radionuclids = forms[line].Radionuclids_DB;
-        var radArray = radionuclids.Replace(" ", string.Empty).ToLower().Split(';');
+        if (string.IsNullOrWhiteSpace(radionuclids)) return result;
+        var radArray = radionuclids.Replace(" ", string.Empty).ToLower()
+            .Replace(" ", "")
+            .Replace(',', ';')
+            .Split(';');
+        if (radArray.Length == 1 && string.Equals(radArray[0], "-")) return result;
         var valid = radArray.All(rad => R.Any(phEntry => phEntry["name"] == rad));
         if (!valid)
         {
@@ -941,6 +933,7 @@ public abstract class CheckF14 : CheckBase
     {
         List<CheckError> result = new();
         var mass = forms[line].Mass_DB;
+        if (string.IsNullOrEmpty(mass)) return result;
         var aggregateState = forms[line].AggregateState_DB;
         if (aggregateState is not 1 and not 2) return result;
         var massFix = mass
@@ -968,7 +961,7 @@ public abstract class CheckF14 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Mass_DB",
                 Value = Convert.ToString(mass),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Укажите массу ОРИ."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Укажите положительную массу ОРИ."
             });
         }
         return result;
@@ -1203,9 +1196,7 @@ public abstract class CheckF14 : CheckBase
         List<CheckError> result = new();
         var documentVid = forms[line].DocumentVid_DB;
         var operationCode = forms[line].OperationCode_DB;
-        var valid = operationCode is "11"
-            ? documentVid is 9
-            : documentVid is >= 1 and <= 15 or 19;
+        var valid = documentVid is >= 1 and <= 15 or 19;
         if (!valid)
         {
             result.Add(new CheckError
@@ -1342,7 +1333,7 @@ public abstract class CheckF14 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes =
         {
-            "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "53", "58", "61",
+            "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "58", "61",
             "62", "65", "67", "68", "71", "72", "73", "74", "75", "97", "98", "99"
         };
         var operationCode = forms[line].OperationCode_DB;
@@ -1378,7 +1369,7 @@ public abstract class CheckF14 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes =
         {
-            "25", "27", "28", "29", "35", "37", "38", "39", "54", "63", "64"
+            "25", "27", "28", "29", "35", "37", "38", "39", "63", "64"
         };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
@@ -1484,7 +1475,7 @@ public abstract class CheckF14 : CheckBase
         string[] applicableOperationCodes =
         {
             "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "53", "54",
-            "58", "65", "66", "67", "68", "71", "72", "73", "74", "75", "97", "98"
+            "58", "63", "64", "65", "66", "67", "68", "71", "72", "73", "74", "75", "97", "98"
         };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
         var transporterOKPO = forms[line].TransporterOKPO_DB;
