@@ -94,6 +94,14 @@ public abstract class CheckF11 : CheckBase
             D_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"D.xlsx"));
 #endif
         }
+        if (holidays_specific.Count == 0)
+        {
+#if DEBUG
+            Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\")), "data", "Spravochniki", "Holidays.xlsx"));
+#else
+            Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"Holidays.xlsx"));
+#endif
+        }
         foreach (var key in rep.Rows11)
         {
             var form = (Form11)key;
@@ -731,21 +739,19 @@ public abstract class CheckF11 : CheckBase
 
     #region Check020
 
-    //Дата документа входит в отчетный период при коде операции 10 (колонка 3) + 10 дней
+    //При коде операции 10, дата документа должна попадать в отчетный период
     private static List<CheckError> Check_020(List<Form11> forms, Report rep, int line)
     {
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "10" };
         var documentDate = forms[line].DocumentDate_DB;
-        var operationDate = forms[line].OperationDate_DB;
+        var operationCode = forms[line].OperationCode_DB;
+        if (!applicableOperationCodes.Contains(operationCode)) return result;
 
-        if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var pEnd = DateTime.MinValue;
-        var pMid = DateTime.MinValue;
-        var valid = DateTime.TryParse(rep.StartPeriod_DB, out var pStart)
-                    && DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
-                    && DateTime.TryParse(documentDate, out pMid)
-                    && pMid >= pStart && pMid <= pEnd;
+        var valid = DateTime.TryParse(documentDate, out var documentDateReal)
+                    && DateTime.TryParse(rep.StartPeriod_DB, out var dateBeginReal)
+                    && DateTime.TryParse(rep.EndPeriod_DB, out var dateEndReal)
+                    && documentDateReal >= dateBeginReal && documentDateReal <= dateEndReal;
         if (!valid)
         {
             result.Add(new CheckError
@@ -754,18 +760,7 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата акта инвентаризации не входит в отчетный период."
-            });
-        }
-        else if ((pEnd - pMid).Days > 10)
-        {
-            result.Add(new CheckError
-            {
-                FormNum = "form_11",
-                Row = (line + 1).ToString(),
-                Column = "OperationDate_DB",
-                Value = operationDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату операции более чем на 10 дней."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата акта инвентаризации выходит за границы отчетного периода."
             });
         }
         return result;
@@ -1734,20 +1729,19 @@ public abstract class CheckF11 : CheckBase
 
     #region Check049
 
-    //При коде операции 10, отчетный период должен оканчиваться не позднее 10 дней от дата документа (колонка 18)
+    //При коде операции 10, дата окончания ОП не позднее даты документа + 10 дней
     private static List<CheckError> Check_049(List<Form11> forms, Report rep, int line)
     {
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "10" };
         var documentDate = forms[line].DocumentDate_DB;
-        var operationCode = forms[line].OperationCode_DB;
-        if (!applicableOperationCodes.Contains(operationCode)) return result;
 
-        var valid = DateTime.TryParse(documentDate, out var documentDateReal)
-                    && DateTime.TryParse(rep.StartPeriod_DB, out var dateBeginReal)
-                    && DateTime.TryParse(rep.EndPeriod_DB, out var dateEndReal)
-                    && documentDateReal >= dateBeginReal
-                    && (dateEndReal - documentDateReal).Days is >= 0 and <= 10;
+        if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
+        var pEnd = DateTime.MinValue;
+        var pMid = DateTime.MinValue;
+        if (!(DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
+                && DateTime.TryParse(documentDate, out pMid))) return result;
+        var valid = Workdays_Between_Dates(pMid, pEnd) <= 10;
         if (!valid)
         {
             result.Add(new CheckError
@@ -1756,11 +1750,12 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа выходит за границы периода."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату акта инвентаризации более, чем на 10 рабочих дней."
             });
         }
         return result;
     }
+
 
     #endregion
 
