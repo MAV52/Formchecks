@@ -427,7 +427,7 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "53" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
+        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB ?? "";
         var repOkpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
@@ -456,7 +456,7 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "54" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
+        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB ?? "";
         var repOkpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
@@ -569,7 +569,7 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "81", "88" };
         var operationCode = forms[line].OperationCode_DB;
-        var сreatorOKPO = forms[line].CreatorOKPO_DB;
+        var сreatorOKPO = forms[line].CreatorOKPO_DB ?? "";
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         var valid = okpoRegex.IsMatch(сreatorOKPO);
@@ -597,8 +597,9 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "83", "84", "85", "86" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
-        var valid = OKSM.All(oksmEntry => oksmEntry["shortname"] != forms[line].CreatorOKPO_DB) 
-                    || forms[line].CreatorOKPO_DB.ToLower() is "россия";
+        var creatorOKPO = forms[line].CreatorOKPO_DB ?? "";
+        var valid = !(OKSM.All(oksmEntry => oksmEntry["shortname"] != creatorOKPO)
+                    || creatorOKPO.ToLower() is "россия");
         if (!valid)
         {
             result.Add(new CheckError
@@ -1843,7 +1844,7 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "66" };
         var operationCode = forms[line].OperationCode_DB;
-        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
+        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB ?? "";
         var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
