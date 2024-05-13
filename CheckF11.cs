@@ -1735,7 +1735,7 @@ public abstract class CheckF11 : CheckBase
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "10", "11", "12", "15", "17", "18", "41", "42", "43", "46", "47", "53", "58", "61", "62", "65", "67", "68", "71", "72", "73", "74", "75", "76", "97", "98", "99" };
         var operationCode = forms[line].OperationCode_DB;
-        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
+        var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB ?? "";
         var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
