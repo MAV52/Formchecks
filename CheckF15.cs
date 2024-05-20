@@ -14,7 +14,7 @@ namespace Client_App.Commands.SyncCommands.CheckForm;
 
 public class CheckF15 : CheckBase
 {
-    #region Properties
+        #region Properties
 
     private static readonly string[] OperationCode_DB_Valids =
     {
@@ -29,33 +29,34 @@ public class CheckF15 : CheckBase
 
     private static readonly Dictionary<string, string> GraphsList = new()
     {
-        { "NumberInOrder_DB", "01 - № п/п" },
-        { "OperationCode_DB", "02 - Код операции" },
-        { "OperationDate_DB", "03 - Дата операции" },
-        { "PassportNumber_DB", "04 - Номер паспорта (сертификата)" },
-        { "Type_DB", "05 - Тип ЗРИ" },
-        { "Radionuclids_DB", "06 - Радионуклиды" },
-        { "FactoryNumber_DB", "07 - Номер" },
-        { "Quantity_DB", "08 - Количество, шт." },
-        { "Activity_DB", "09 - Суммарная активность, Бк" },
-        { "CreationDate_DB", "10 - Дата выпуска" },
-        { "StatusRAO_DB", "11 - Статус РАО" },
-        { "DocumentVid_DB", "12 - Вид документа" },
-        { "DocumentNumber_DB", "13 - Номер документа" },
-        { "DocumentDate_DB", "14 - Дата документа" },
-        { "ProviderOrRecieverOKPO_DB", "15 - Код ОКПО поставщика или получателя" },
-        { "TransporterOKPO_DB", "16 - Код ОКПО перевозчика" },
-        { "PackName_DB", "17 - Наименование прибора, УКТ, упаковки" },
-        { "PackType_DB", "18 - Тип прибора, УКТ, упаковки" },
-        { "PackNumber_DB", "19 - Заводской номер прибора, УКТ, упаковки" },
-        { "StoragePlaceName_DB", "20 - Наименование пункта хранения" },
-        { "StoragePlaceCode_DB", "21 - Код пункта хранения" },
-        { "RefineOrSortRAOCode_DB", "22 - Код переработки/сортировки РАО" },
-        { "Subsidy_DB", "23 - Субсидия, %" },
-        { "FcpNumber_DB", "24 - Номер мероприятия ФЦП" },
+        { "NumberInOrder_DB", "01 - в„– Рї/Рї" },
+        { "OperationCode_DB", "02 - РљРѕРґ РѕРїРµСЂР°С†РёРё" },
+        { "OperationDate_DB", "03 - Р”Р°С‚Р° РѕРїРµСЂР°С†РёРё" },
+        { "PassportNumber_DB", "04 - РќРѕРјРµСЂ РїР°СЃРїРѕСЂС‚Р° (СЃРµСЂС‚РёС„РёРєР°С‚Р°)" },
+        { "Type_DB", "05 - РўРёРї Р—Р Р" },
+        { "Radionuclids_DB", "06 - Р Р°РґРёРѕРЅСѓРєР»РёРґС‹" },
+        { "FactoryNumber_DB", "07 - РќРѕРјРµСЂ" },
+        { "Quantity_DB", "08 - РљРѕР»РёС‡РµСЃС‚РІРѕ, С€С‚." },
+        { "Activity_DB", "09 - РЎСѓРјРјР°СЂРЅР°СЏ Р°РєС‚РёРІРЅРѕСЃС‚СЊ, Р‘Рє" },
+        { "CreationDate_DB", "10 - Р”Р°С‚Р° РІС‹РїСѓСЃРєР°" },
+        { "StatusRAO_DB", "11 - РЎС‚Р°С‚СѓСЃ Р РђРћ" },
+        { "DocumentVid_DB", "12 - Р’РёРґ РґРѕРєСѓРјРµРЅС‚Р°" },
+        { "DocumentNumber_DB", "13 - РќРѕРјРµСЂ РґРѕРєСѓРјРµРЅС‚Р°" },
+        { "DocumentDate_DB", "14 - Р”Р°С‚Р° РґРѕРєСѓРјРµРЅС‚Р°" },
+        { "ProviderOrRecieverOKPO_DB", "15 - РљРѕРґ РћРљРџРћ РїРѕСЃС‚Р°РІС‰РёРєР° РёР»Рё РїРѕР»СѓС‡Р°С‚РµР»СЏ" },
+        { "TransporterOKPO_DB", "16 - РљРѕРґ РћРљРџРћ РїРµСЂРµРІРѕР·С‡РёРєР°" },
+        { "PackName_DB", "17 - РќР°РёРјРµРЅРѕРІР°РЅРёРµ РїСЂРёР±РѕСЂР°, РЈРљРў, СѓРїР°РєРѕРІРєРё" },
+        { "PackType_DB", "18 - РўРёРї РїСЂРёР±РѕСЂР°, РЈРљРў, СѓРїР°РєРѕРІРєРё" },
+        { "PackNumber_DB", "19 - Р—Р°РІРѕРґСЃРєРѕР№ РЅРѕРјРµСЂ РїСЂРёР±РѕСЂР°, РЈРљРў, СѓРїР°РєРѕРІРєРё" },
+        { "StoragePlaceName_DB", "20 - РќР°РёРјРµРЅРѕРІР°РЅРёРµ РїСѓРЅРєС‚Р° С…СЂР°РЅРµРЅРёСЏ" },
+        { "StoragePlaceCode_DB", "21 - РљРѕРґ РїСѓРЅРєС‚Р° С…СЂР°РЅРµРЅРёСЏ" },
+        { "RefineOrSortRAOCode_DB", "22 - РљРѕРґ РїРµСЂРµСЂР°Р±РѕС‚РєРё/СЃРѕСЂС‚РёСЂРѕРІРєРё Р РђРћ" },
+        { "Subsidy_DB", "23 - РЎСѓР±СЃРёРґРёСЏ, %" },
+        { "FcpNumber_DB", "24 - РќРѕРјРµСЂ РјРµСЂРѕРїСЂРёСЏС‚РёСЏ Р¤Р¦Рџ" },
     };
 
     #endregion
+
     #region CheckTotal
 
     public static List<CheckError> Check_Total(Reports reps, Report rep)
@@ -78,6 +79,14 @@ public class CheckF15 : CheckBase
             D_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"D.xlsx"));
 #endif
         }
+        if (R.Count == 0)
+        {
+#if DEBUG
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "R.xlsx"));
+#else
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
+#endif
+        }
         if (holidays_specific.Count == 0)
         {
 #if DEBUG
@@ -89,7 +98,7 @@ public class CheckF15 : CheckBase
         foreach (var key in rep.Rows15)
         {
             var form = (Form15)key;
-            var formsList = rep.Rows11.ToList<Form15>();
+            var formsList = rep.Rows15.ToList<Form15>();
             var notes = rep.Notes.ToList<Note>();
             var forms10 = reps.Master_DB.Rows10.ToList<Form10>();
             errorList.AddRange(Check_001(formsList, currentFormLine));
@@ -171,7 +180,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "NumberInOrder_DB",
                 Value = forms[line].NumberInOrder_DB.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Номера строк должны располагаться по порядку, без пропусков или дублирования номеров"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРѕРјРµСЂР° СЃС‚СЂРѕРє РґРѕР»Р¶РЅС‹ СЂР°СЃРїРѕР»Р°РіР°С‚СЊСЃСЏ РїРѕ РїРѕСЂСЏРґРєСѓ, Р±РµР· РїСЂРѕРїСѓСЃРєРѕРІ РёР»Рё РґСѓР±Р»РёСЂРѕРІР°РЅРёСЏ РЅРѕРјРµСЂРѕРІ"
             });
         }
         return result;
@@ -194,7 +203,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Код операции не может быть использован в форме 1.1."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РљРѕРґ РѕРїРµСЂР°С†РёРё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РёСЃРїРѕР»СЊР·РѕРІР°РЅ РІ С„РѕСЂРјРµ 1.1."
             });
         }
         return result;
@@ -219,7 +228,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Сведения, представленные в инвентаризации, не соответствуют СНК"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РЎРІРµРґРµРЅРёСЏ, РїСЂРµРґСЃС‚Р°РІР»РµРЅРЅС‹Рµ РІ РёРЅРІРµРЅС‚Р°СЂРёР·Р°С†РёРё, РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РЎРќРљ"
             });
         }
         return result;
@@ -245,7 +254,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо дать пояснение об осуществленной операции."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРµРѕР±С…РѕРґРёРјРѕ РґР°С‚СЊ РїРѕСЏСЃРЅРµРЅРёРµ РѕР± РѕСЃСѓС‰РµСЃС‚РІР»РµРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё."
             });
         }
         return result;
@@ -270,7 +279,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Учетной единицы с такими параметрами нет в организации. Проверьте правильность указываемых сведений для ОЗРИ"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РЈС‡РµС‚РЅРѕР№ РµРґРёРЅРёС†С‹ СЃ С‚Р°РєРёРјРё РїР°СЂР°РјРµС‚СЂР°РјРё РЅРµС‚ РІ РѕСЂРіР°РЅРёР·Р°С†РёРё. РџСЂРѕРІРµСЂСЊС‚Рµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ СѓРєР°Р·С‹РІР°РµРјС‹С… СЃРІРµРґРµРЅРёР№ РґР»СЏ РћР—Р Р"
             });
         }
         return result;
@@ -295,7 +304,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В отчетах не найдена строка об осуществлении передачи учетной единицы. Проверьте правильность выбранного кода операции"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р’ РѕС‚С‡РµС‚Р°С… РЅРµ РЅР°Р№РґРµРЅР° СЃС‚СЂРѕРєР° РѕР± РѕСЃСѓС‰РµСЃС‚РІР»РµРЅРёРё РїРµСЂРµРґР°С‡Рё СѓС‡РµС‚РЅРѕР№ РµРґРёРЅРёС†С‹. РџСЂРѕРІРµСЂСЊС‚Рµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё"
             });
         }
         return result;
@@ -304,7 +313,7 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check002_41
-    //эта проверка по идее никогда не выдаст ошибку, т.к. проверке все равно, появился ли 41 код вручную или автоматически.
+    //СЌС‚Р° РїСЂРѕРІРµСЂРєР° РїРѕ РёРґРµРµ РЅРёРєРѕРіРґР° РЅРµ РІС‹РґР°СЃС‚ РѕС€РёР±РєСѓ, С‚.Рє. РїСЂРѕРІРµСЂРєРµ РІСЃРµ СЂР°РІРЅРѕ, РїРѕСЏРІРёР»СЃСЏ Р»Рё 41 РєРѕРґ РІСЂСѓС‡РЅСѓСЋ РёР»Рё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.
     private static List<CheckError> Check_002_41(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -320,7 +329,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + ""
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + ""
             });
         }
         return result;
@@ -344,7 +353,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + ""
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + ""
             });
         }
         return result;
@@ -368,7 +377,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В отчетах не найдена строка об изъятии РАО из пункта хранения. Проверьте правильность выбранного кода операции"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р’ РѕС‚С‡РµС‚Р°С… РЅРµ РЅР°Р№РґРµРЅР° СЃС‚СЂРѕРєР° РѕР± РёР·СЉСЏС‚РёРё Р РђРћ РёР· РїСѓРЅРєС‚Р° С…СЂР°РЅРµРЅРёСЏ. РџСЂРѕРІРµСЂСЊС‚Рµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё"
             });
         }
         return result;
@@ -392,7 +401,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В отчетах не найдена строка снятии учетной единицы для упаковки/переупаковки. Проверьте правильность выбранного кода операции"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р’ РѕС‚С‡РµС‚Р°С… РЅРµ РЅР°Р№РґРµРЅР° СЃС‚СЂРѕРєР° СЃРЅСЏС‚РёРё СѓС‡РµС‚РЅРѕР№ РµРґРёРЅРёС†С‹ РґР»СЏ СѓРїР°РєРѕРІРєРё/РїРµСЂРµСѓРїР°РєРѕРІРєРё. РџСЂРѕРІРµСЂСЊС‚Рµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё"
             });
         }
         return result;
@@ -416,7 +425,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для ОЗРИ, которые возвращаются в страну поставщика код статус РАО – 7"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РћР—Р Р, РєРѕС‚РѕСЂС‹Рµ РІРѕР·РІСЂР°С‰Р°СЋС‚СЃСЏ РІ СЃС‚СЂР°РЅСѓ РїРѕСЃС‚Р°РІС‰РёРєР° РєРѕРґ СЃС‚Р°С‚СѓСЃ Р РђРћ вЂ“ 7"
             });
         }
         return result;
@@ -425,7 +434,7 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check002_71
-    //Справочная "ошибка" - т.е. даже не ошибка.
+    //РЎРїСЂР°РІРѕС‡РЅР°СЏ "РѕС€РёР±РєР°" - С‚.Рµ. РґР°Р¶Рµ РЅРµ РѕС€РёР±РєР°.
     private static List<CheckError> Check_002_71(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -441,7 +450,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "К отчету необходимо приложить скан-копию документа характеризующего операцию"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Рљ РѕС‚С‡РµС‚Сѓ РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРёР»РѕР¶РёС‚СЊ СЃРєР°РЅ-РєРѕРїРёСЋ РґРѕРєСѓРјРµРЅС‚Р° С…Р°СЂР°РєС‚РµСЂРёР·СѓСЋС‰РµРіРѕ РѕРїРµСЂР°С†РёСЋ"
             });
         }
         return result;
@@ -475,14 +484,13 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationDate_DB",
                 Value = Convert.ToString(operationDate),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата операции не входит в отчетный период."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°С‚Р° РѕРїРµСЂР°С†РёРё РЅРµ РІС…РѕРґРёС‚ РІ РѕС‚С‡РµС‚РЅС‹Р№ РїРµСЂРёРѕРґ."
             });
         }
         return result;
     }
 
     #endregion
-
 
     #region Check003_15
     private static List<CheckError> Check_003_15(List<Form15> forms, Report rep, int line)
@@ -510,7 +518,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = Convert.ToString(documentDate),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа не входит в отчетный период."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°С‚Р° РґРѕРєСѓРјРµРЅС‚Р° РЅРµ РІС…РѕРґРёС‚ РІ РѕС‚С‡РµС‚РЅС‹Р№ РїРµСЂРёРѕРґ."
             });
         }
         return result;
@@ -532,7 +540,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PassportNumber_DB",
                 Value = Convert.ToString(passportNumber),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -554,7 +562,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Type_DB",
                 Value = Convert.ToString(typeDB),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -564,7 +572,7 @@ public class CheckF15 : CheckBase
 
     #region Check006_a
 
-    //У радионуклидов в качестве разделителя использовать ;
+    //РЈ СЂР°РґРёРѕРЅСѓРєР»РёРґРѕРІ РІ РєР°С‡РµСЃС‚РІРµ СЂР°Р·РґРµР»РёС‚РµР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ ;
     private static List<CheckError> Check_006_a(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -577,7 +585,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Radionuclids_DB",
                 Value = Convert.ToString(radionuclids),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Радионуклиды должны быть разделены точкой с запятой."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р¤РѕСЂРјР°С‚ РІРІРѕРґР° РґР°РЅРЅС‹С… РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїСЂРёРєР°Р·Сѓ. Р Р°РґРёРѕРЅСѓРєР»РёРґС‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СЂР°Р·РґРµР»РµРЅС‹ С‚РѕС‡РєРѕР№ СЃ Р·Р°РїСЏС‚РѕР№."
             });
         }
         return result;
@@ -587,7 +595,7 @@ public class CheckF15 : CheckBase
 
     #region Check006_b
 
-    //Все радионуклиды есть в справочнике
+    //Р’СЃРµ СЂР°РґРёРѕРЅСѓРєР»РёРґС‹ РµСЃС‚СЊ РІ СЃРїСЂР°РІРѕС‡РЅРёРєРµ
     private static List<CheckError> Check_006_b(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -607,7 +615,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Radionuclids_DB",
                 Value = Convert.ToString(radionuclids),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Радионуклид отсутствует в справочнике."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р¤РѕСЂРјР°С‚ РІРІРѕРґР° РґР°РЅРЅС‹С… РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїСЂРёРєР°Р·Сѓ. Р Р°РґРёРѕРЅСѓРєР»РёРґ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ СЃРїСЂР°РІРѕС‡РЅРёРєРµ."
             });
         }
         return result;
@@ -617,7 +625,7 @@ public class CheckF15 : CheckBase
 
     #region Check007_a
 
-    //У номеров в качестве разделителя использовать ;
+    //РЈ РЅРѕРјРµСЂРѕРІ РІ РєР°С‡РµСЃС‚РІРµ СЂР°Р·РґРµР»РёС‚РµР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ ;
     private static List<CheckError> Check_007_a(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -630,7 +638,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "FactoryNumber_DB",
                 Value = Convert.ToString(numbers),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Номера должны быть разделены точкой с запятой."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р¤РѕСЂРјР°С‚ РІРІРѕРґР° РґР°РЅРЅС‹С… РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїСЂРёРєР°Р·Сѓ. РќРѕРјРµСЂР° РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СЂР°Р·РґРµР»РµРЅС‹ С‚РѕС‡РєРѕР№ СЃ Р·Р°РїСЏС‚РѕР№."
             });
         }
         return result;
@@ -640,7 +648,7 @@ public class CheckF15 : CheckBase
 
     #region Check007_b
 
-    //Номер не пустая строка (колонка 7)
+    //РќРѕРјРµСЂ РЅРµ РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР° (РєРѕР»РѕРЅРєР° 7)
     private static List<CheckError> Check_007_b(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -654,7 +662,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "FactoryNumber_DB",
                 Value = Convert.ToString(factoryNumber),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Заполните сведения о номере ЗРИ, который переведен в ОЗИИИ"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р—Р°РїРѕР»РЅРёС‚Рµ СЃРІРµРґРµРЅРёСЏ Рѕ РЅРѕРјРµСЂРµ Р—Р Р, РєРѕС‚РѕСЂС‹Р№ РїРµСЂРµРІРµРґРµРЅ РІ РћР—РРР"
             });
         }
         return result;
@@ -676,7 +684,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Quantity_DB",
                 Value = Convert.ToString(quantityDB),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Заполните сведения о количестве ЗРИ, переведенных в ОЗИИИ"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р—Р°РїРѕР»РЅРёС‚Рµ СЃРІРµРґРµРЅРёСЏ Рѕ РєРѕР»РёС‡РµСЃС‚РІРµ Р—Р Р, РїРµСЂРµРІРµРґРµРЅРЅС‹С… РІ РћР—РРР"
             });
         }
         return result;
@@ -707,7 +715,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Activity_DB",
                 Value = Convert.ToString(forms[line].Activity_DB),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Заполните сведения о суммарной активности ЗРИ, переведенных в ОЗИИИ. Оценочные сведения приводятся в круглых скобках"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р—Р°РїРѕР»РЅРёС‚Рµ СЃРІРµРґРµРЅРёСЏ Рѕ СЃСѓРјРјР°СЂРЅРѕР№ Р°РєС‚РёРІРЅРѕСЃС‚Рё Р—Р Р, РїРµСЂРµРІРµРґРµРЅРЅС‹С… РІ РћР—РРР. РћС†РµРЅРѕС‡РЅС‹Рµ СЃРІРµРґРµРЅРёСЏ РїСЂРёРІРѕРґСЏС‚СЃСЏ РІ РєСЂСѓРіР»С‹С… СЃРєРѕР±РєР°С…"
             });
         }
         return result;
@@ -731,7 +739,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreationDate_DB",
                 Value = Convert.ToString(creationDate),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата выпуска не может быть позже даты операции."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°С‚Р° РІС‹РїСѓСЃРєР° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїРѕР·Р¶Рµ РґР°С‚С‹ РѕРїРµСЂР°С†РёРё."
             });
         }
         return result;
@@ -759,7 +767,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StatusRAO_DB",
                 Value = Convert.ToString(status),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для операции с кодом 14, 28 и 38 статус РАО должен быть равен коду ОКПО отчитывающейся организации."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РѕРїРµСЂР°С†РёРё СЃ РєРѕРґРѕРј 14, 28 Рё 38 СЃС‚Р°С‚СѓСЃ Р РђРћ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СЂР°РІРµРЅ РєРѕРґСѓ РћРљРџРћ РѕС‚С‡РёС‚С‹РІР°СЋС‰РµР№СЃСЏ РѕСЂРіР°РЅРёР·Р°С†РёРё."
             });
         }
         return result;
@@ -784,7 +792,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StatusRAO_DB",
                 Value = Convert.ToString(status),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для операции с кодом 76 статус РАО должен быть равен 6."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РѕРїРµСЂР°С†РёРё СЃ РєРѕРґРѕРј 76 СЃС‚Р°С‚СѓСЃ Р РђРћ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СЂР°РІРµРЅ 6."
             });
         }
         return result;
@@ -819,7 +827,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StatusRAO_DB",
                 Value = Convert.ToString(status),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Неверный код \"Статус РАО\""
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРµРІРµСЂРЅС‹Р№ РєРѕРґ \"РЎС‚Р°С‚СѓСЃ Р РђРћ\""
             });
         }
         return result;
@@ -843,7 +851,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Неверный код вида документа, сопровождающего операцию."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРµРІРµСЂРЅС‹Р№ РєРѕРґ РІРёРґР° РґРѕРєСѓРјРµРЅС‚Р°, СЃРѕРїСЂРѕРІРѕР¶РґР°СЋС‰РµРіРѕ РѕРїРµСЂР°С†РёСЋ."
             });
         }
         else if (documentVid == 19)
@@ -857,7 +865,7 @@ public class CheckF15 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "DocumentVid_DB",
                     Value = Convert.ToString(documentVid),
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "К коду вида документа 19 необходимо примечание."
+                    Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Рљ РєРѕРґСѓ РІРёРґР° РґРѕРєСѓРјРµРЅС‚Р° 19 РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРёРјРµС‡Р°РЅРёРµ."
                 });
             }
         }
@@ -880,7 +888,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentNumber_DB",
                 Value = Convert.ToString(documentNumberDB),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -911,7 +919,7 @@ public class CheckF15 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "DocumentDate_DB",
                     Value = Convert.ToString(documentDate),
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа должна соответствовать дате операции"
+                    Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°С‚Р° РґРѕРєСѓРјРµРЅС‚Р° РґРѕР»Р¶РЅР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ РґР°С‚Рµ РѕРїРµСЂР°С†РёРё"
                 });
             }
         }
@@ -929,7 +937,7 @@ public class CheckF15 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "DocumentDate_DB",
                     Value = Convert.ToString(documentDate),
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа выходит за границы периода"
+                    Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°С‚Р° РґРѕРєСѓРјРµРЅС‚Р° РІС‹С…РѕРґРёС‚ Р·Р° РіСЂР°РЅРёС†С‹ РїРµСЂРёРѕРґР°"
                 });
             }
         }
@@ -946,7 +954,7 @@ public class CheckF15 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "DocumentDate_DB",
                     Value = Convert.ToString(documentDate),
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Даат документа не может быть позже даты операции"
+                    Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р°Р°С‚ РґРѕРєСѓРјРµРЅС‚Р° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїРѕР·Р¶Рµ РґР°С‚С‹ РѕРїРµСЂР°С†РёРё"
                 });
             }
         }
@@ -957,7 +965,7 @@ public class CheckF15 : CheckBase
 
     #region Check015_01
 
-    //Код ОКПО поставщика/получателя не равен коду ОКПО отчитывающейся организации + 8/14 цифр (колонка 18)
+    //РљРѕРґ РћРљРџРћ РїРѕСЃС‚Р°РІС‰РёРєР°/РїРѕР»СѓС‡Р°С‚РµР»СЏ РЅРµ СЂР°РІРµРЅ РєРѕРґСѓ РћРљРџРћ РѕС‚С‡РёС‚С‹РІР°СЋС‰РµР№СЃСЏ РѕСЂРіР°РЅРёР·Р°С†РёРё + 8/14 С†РёС„СЂ (РєРѕР»РѕРЅРєР° 18)
     private static List<CheckError> Check_015_01(List<Form15> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
@@ -979,7 +987,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО отчитывающейся организации."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РєРѕРґ РћРљРџРћ РѕС‚С‡РёС‚С‹РІР°СЋС‰РµР№СЃСЏ РѕСЂРіР°РЅРёР·Р°С†РёРё."
             });
         }
         return result;
@@ -989,7 +997,7 @@ public class CheckF15 : CheckBase
 
     #region Check015_21
 
-    //Код ОКПО поставщика/получателя не равен коду ОКПО отчитывающейся организации + 8/14 цифр (колонка 18)
+    //РљРѕРґ РћРљРџРћ РїРѕСЃС‚Р°РІС‰РёРєР°/РїРѕР»СѓС‡Р°С‚РµР»СЏ РЅРµ СЂР°РІРµРЅ РєРѕРґСѓ РћРљРџРћ РѕС‚С‡РёС‚С‹РІР°СЋС‰РµР№СЃСЏ РѕСЂРіР°РЅРёР·Р°С†РёРё + 8/14 С†РёС„СЂ (РєРѕР»РѕРЅРєР° 18)
     private static List<CheckError> Check_015_21(List<Form15> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
@@ -1011,7 +1019,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Значение может состоять только из 8 или 14 символов"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р—РЅР°С‡РµРЅРёРµ РјРѕР¶РµС‚ СЃРѕСЃС‚РѕСЏС‚СЊ С‚РѕР»СЊРєРѕ РёР· 8 РёР»Рё 14 СЃРёРјРІРѕР»РѕРІ"
             });
         }
         valid = providerOrRecieverOKPO != repOKPO;
@@ -1023,7 +1031,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО контрагента."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РєРѕРґ РћРљРџРћ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°."
             });
         }
         return result;
@@ -1033,7 +1041,7 @@ public class CheckF15 : CheckBase
 
     #region Check015_22
 
-    //Код ОКПО поставщика/получателя состоит из 8/14 чисел или "минобороны" (колонка 18)
+    //РљРѕРґ РћРљРџРћ РїРѕСЃС‚Р°РІС‰РёРєР°/РїРѕР»СѓС‡Р°С‚РµР»СЏ СЃРѕСЃС‚РѕРёС‚ РёР· 8/14 С‡РёСЃРµР» РёР»Рё "РјРёРЅРѕР±РѕСЂРѕРЅС‹" (РєРѕР»РѕРЅРєР° 18)
     private static List<CheckError> Check_015_22(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -1042,7 +1050,7 @@ public class CheckF15 : CheckBase
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         if (operationCode is not ("22" or "32")) return result;
         var valid = okpoRegex.IsMatch(providerOrRecieverOKPO)
-                    || providerOrRecieverOKPO.Equals("минобороны", StringComparison.CurrentCultureIgnoreCase);
+                    || providerOrRecieverOKPO.Equals("РјРёРЅРѕР±РѕСЂРѕРЅС‹", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1051,7 +1059,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Следует указать код ОКПО контрагента, либо \"Минобороны\" без кавычек."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р¤РѕСЂРјР°С‚ РІРІРѕРґР° РґР°РЅРЅС‹С… РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїСЂРёРєР°Р·Сѓ. РЎР»РµРґСѓРµС‚ СѓРєР°Р·Р°С‚СЊ РєРѕРґ РћРљРџРћ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°, Р»РёР±Рѕ \"РњРёРЅРѕР±РѕСЂРѕРЅС‹\" Р±РµР· РєР°РІС‹С‡РµРє."
             });
         }
         return result;
@@ -1061,7 +1069,7 @@ public class CheckF15 : CheckBase
 
     #region Check015_84
 
-    //Код ОКПО поставщика/получателя из ОКСМ (не Россия), для определенных кодов операции, с примечанием (колонка 18)
+    //РљРѕРґ РћРљРџРћ РїРѕСЃС‚Р°РІС‰РёРєР°/РїРѕР»СѓС‡Р°С‚РµР»СЏ РёР· РћРљРЎРњ (РЅРµ Р РѕСЃСЃРёСЏ), РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРЅС‹С… РєРѕРґРѕРІ РѕРїРµСЂР°С†РёРё, СЃ РїСЂРёРјРµС‡Р°РЅРёРµРј (РєРѕР»РѕРЅРєР° 18)
     private static List<CheckError> Check_015_84(List<Form15> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
@@ -1071,7 +1079,7 @@ public class CheckF15 : CheckBase
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = OKSM.Any(oksmEntry => oksmEntry["shortname"] == providerOrRecieverOKPO)
-                    && !providerOrRecieverOKPO.Equals("россия", StringComparison.CurrentCultureIgnoreCase);
+                    && !providerOrRecieverOKPO.Equals("СЂРѕСЃСЃРёСЏ", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1080,7 +1088,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р¤РѕСЂРјР°С‚ РІРІРѕРґР° РґР°РЅРЅС‹С… РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїСЂРёРєР°Р·Сѓ."
             });
         }
         valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -1092,7 +1100,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = Convert.ToString(providerOrRecieverOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо добавить примечание."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРµРѕР±С…РѕРґРёРјРѕ РґРѕР±Р°РІРёС‚СЊ РїСЂРёРјРµС‡Р°РЅРёРµ."
             });
         }
         return result;
@@ -1102,7 +1110,7 @@ public class CheckF15 : CheckBase
 
     #region Check016_01
 
-    //При определенных кодах операции, код ОКПО перевозчика равен "-"
+    //РџСЂРё РѕРїСЂРµРґРµР»РµРЅРЅС‹С… РєРѕРґР°С… РѕРїРµСЂР°С†РёРё, РєРѕРґ РћРљРџРћ РїРµСЂРµРІРѕР·С‡РёРєР° СЂР°РІРµРЅ "-"
     private static List<CheckError> Check_016_01(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -1121,7 +1129,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = Convert.ToString(transporterOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При выбранном коде операции транспортирование не производится."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РџСЂРё РІС‹Р±СЂР°РЅРЅРѕРј РєРѕРґРµ РѕРїРµСЂР°С†РёРё С‚СЂР°РЅСЃРїРѕСЂС‚РёСЂРѕРІР°РЅРёРµ РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ."
             });
         }
         return result;
@@ -1131,7 +1139,7 @@ public class CheckF15 : CheckBase
 
     #region Check016_21
 
-    //При определенных кодах операции, код ОКПО перевозчика равен 8/14 цифр
+    //РџСЂРё РѕРїСЂРµРґРµР»РµРЅРЅС‹С… РєРѕРґР°С… РѕРїРµСЂР°С†РёРё, РєРѕРґ РћРљРџРћ РїРµСЂРµРІРѕР·С‡РёРєР° СЂР°РІРµРЅ 8/14 С†РёС„СЂ
     private static List<CheckError> Check_016_21(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -1154,7 +1162,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = Convert.ToString(transporterOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Значение может состоять только из 8 или 14 символов"
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р—РЅР°С‡РµРЅРёРµ РјРѕР¶РµС‚ СЃРѕСЃС‚РѕСЏС‚СЊ С‚РѕР»СЊРєРѕ РёР· 8 РёР»Рё 14 СЃРёРјРІРѕР»РѕРІ"
             });
         }
         return result;
@@ -1164,7 +1172,7 @@ public class CheckF15 : CheckBase
 
     #region Check016_22
 
-    //Код ОКПО перевозчика состоит из 8/14 чисел или "минобороны"
+    //РљРѕРґ РћРљРџРћ РїРµСЂРµРІРѕР·С‡РёРєР° СЃРѕСЃС‚РѕРёС‚ РёР· 8/14 С‡РёСЃРµР» РёР»Рё "РјРёРЅРѕР±РѕСЂРѕРЅС‹"
     private static List<CheckError> Check_016_22(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -1174,7 +1182,7 @@ public class CheckF15 : CheckBase
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = okpoRegex.IsMatch(transporterOKPO)
-                    || transporterOKPO.Equals("минобороны", StringComparison.CurrentCultureIgnoreCase);
+                    || transporterOKPO.Equals("РјРёРЅРѕР±РѕСЂРѕРЅС‹", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
             result.Add(new CheckError
@@ -1183,7 +1191,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = Convert.ToString(transporterOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"Минобороны\" без кавычек."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РќРµРѕР±С…РѕРґРёРјРѕ СѓРєР°Р·Р°С‚СЊ РєРѕРґ РћРљРџРћ РѕСЂРіР°РЅРёР·Р°С†РёРё РїРµСЂРµРІРѕР·С‡РёРєР°, Р»РёР±Рѕ \"РњРёРЅРѕР±РѕСЂРѕРЅС‹\" Р±РµР· РєР°РІС‹С‡РµРє."
             });
         }
         return result;
@@ -1205,7 +1213,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackName_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1227,7 +1235,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackType_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1249,7 +1257,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackNumber_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1271,7 +1279,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StoragePlaceName_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1293,7 +1301,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StoragePlaceCode_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1315,7 +1323,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "RefineOrSortRAOCode_DB",
                 Value = Convert.ToString(sortcode),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         else
@@ -1340,7 +1348,7 @@ public class CheckF15 : CheckBase
                         Row = (line + 1).ToString(),
                         Column = "RefineOrSortRAOCode_DB",
                         Value = Convert.ToString(sortcode),
-                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для данного кода операции в качестве кода переработки/сортировки указывается прочерк"
+                        Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р”Р»СЏ РґР°РЅРЅРѕРіРѕ РєРѕРґР° РѕРїРµСЂР°С†РёРё РІ РєР°С‡РµСЃС‚РІРµ РєРѕРґР° РїРµСЂРµСЂР°Р±РѕС‚РєРё/СЃРѕСЂС‚РёСЂРѕРІРєРё СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РїСЂРѕС‡РµСЂРє"
                     });
                 }
             }
@@ -1355,7 +1363,7 @@ public class CheckF15 : CheckBase
                         Row = (line + 1).ToString(),
                         Column = "RefineOrSortRAOCode_DB",
                         Value = Convert.ToString(sortcode),
-                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Коду операции сортировка соответствуют коды сортировки 52, 72, 74"
+                        Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "РљРѕРґСѓ РѕРїРµСЂР°С†РёРё СЃРѕСЂС‚РёСЂРѕРІРєР° СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РєРѕРґС‹ СЃРѕСЂС‚РёСЂРѕРІРєРё 52, 72, 74"
                     });
                 }
             }
@@ -1379,7 +1387,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StoragePlaceCode_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
@@ -1401,7 +1409,7 @@ public class CheckF15 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "StoragePlaceCode_DB",
                 Value = Convert.ToString(field_value),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+                Message = $"РџСЂРѕРІРµСЂРєР° {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Р“СЂР°С„Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°."
             });
         }
         return result;
