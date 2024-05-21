@@ -55,10 +55,10 @@ public class CheckF12 : CheckBase
             Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"Holidays.xlsx"));
 #endif
         }
+        var formsList = rep.Rows12.ToList<Form12>();
         foreach (var key in rep.Rows12)
         {
             var form = (Form12)key;
-            var formsList = rep.Rows12.ToList<Form12>();
             var notes = rep.Notes.ToList<Note>();
             var forms10 = reps.Master_DB.Rows10.ToList<Form10>();
             errorList.AddRange(Check_001(formsList, currentFormLine));
@@ -119,6 +119,7 @@ public class CheckF12 : CheckBase
 
             currentFormLine++;
         }
+        errorList.AddRange(Check_056(formsList));
 
         var index = 0;
         foreach (var error in errorList)
@@ -160,7 +161,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Id",
                 Value = forms[line].Id.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Номера строк должны располагаться по порядку, без пропусков или дублирования номеров."
+                Message = "Номера строк должны располагаться по порядку, без пропусков или дублирования номеров."
             });
         }
         return result;
@@ -183,7 +184,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = operationCode,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Этот код операции не может быть использован в форме 1.2."
+                Message = "Этот код операции не может быть использован в форме 1.2."
             });
         }
         return result;
@@ -206,7 +207,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = forms[line].OperationCode_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Активность изделий из обедненного урана не может снизится за время эксплуатации до значений ниже уровня отнесения к объектам учета."
+                Message = "Активность изделий из обедненного урана не может снизится за время эксплуатации до значений ниже уровня отнесения к объектам учета."
             });
         }
         return result;
@@ -242,7 +243,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = forms[line].OperationCode_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо дать пояснение об осуществленной операции."
+                Message = "Необходимо дать пояснение об осуществленной операции."
             });
         }
         return result;
@@ -317,7 +318,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В графе 16 необходимо указать код ОКПО отчитывающейся организации. В случае, если зарядку/разрядку осуществляла подрядная организация, следует использовать код операции 54."
+                Message = "В графе 16 необходимо указать код ОКПО отчитывающейся организации. В случае, если зарядку/разрядку осуществляла подрядная организация, следует использовать код операции 54."
             });
         }
         return result;
@@ -345,7 +346,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В графе 16 необходимо указать ОКПО подрядной организации. В случае, если зарядка/разрядка осуществлялась силами отчитывающейся организации, следует использовать код операции 53."
+                Message = "В графе 16 необходимо указать ОКПО подрядной организации. В случае, если зарядка/разрядка осуществлялась силами отчитывающейся организации, следует использовать код операции 53."
             });
         }
         return result;
@@ -373,7 +374,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = forms[line].OperationCode_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В отчетах не найдены сведения о снятии с учета учетной единицы для разукомплектования. Проверьте правильность выбранного кода операции."
+                Message = "В отчетах не найдены сведения о снятии с учета учетной единицы для разукомплектования. Проверьте правильность выбранного кода операции."
             });
         }
         return result;
@@ -401,7 +402,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = forms[line].OperationCode_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "В отчетах не найдены сведения о вывозе учетной единицы. Проверьте правильность выбранного кода операции."
+                Message = "В отчетах не найдены сведения о вывозе учетной единицы. Проверьте правильность выбранного кода операции."
             });
         }
         return result;
@@ -429,7 +430,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "-",
                 Value = "-",
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Заполните форму 1.3."
+                Message = "Заполните форму 1.3."
             });
         }
         return result;
@@ -445,10 +446,10 @@ public class CheckF12 : CheckBase
         string[] applicableOperationCodes = { "11", "12", "28", "38", "41", "63", "64", "73", "81", "85" };
         if (!applicableOperationCodes.Contains(forms[line].OperationCode_DB)) return result;
         var owner = forms[line].Owner_DB;
-        var repOkpo = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
-            ? forms10[1].Okpo_DB
-            : forms10[0].Okpo_DB;
-        var valid = owner == repOkpo;
+        var okpoRepJur = forms10[0].Okpo_DB ?? "";
+        var okpoRepTerPodr = forms10[1].Okpo_DB ?? "";
+        var valid = !string.IsNullOrWhiteSpace(owner) 
+                    && (owner == okpoRepTerPodr || owner == okpoRepJur);
         if (!valid)
         {
             result.Add(new CheckError
@@ -457,7 +458,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Owner_DB",
                 Value = owner,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Уточните правообладателя ИОУ."
+                Message = "Уточните правообладателя ИОУ."
             });
         }
         return result;
@@ -484,7 +485,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationCode_DB",
                 Value = forms[line].OperationCode_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Код используется для предоставления сведений о ИОУ, произведенных в Российской Федерации."
+                Message = "Код используется для предоставления сведений о ИОУ, произведенных в Российской Федерации."
             });
         }
         return result;
@@ -509,7 +510,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreatorOKPO_DB",
                 Value = forms[line].CreatorOKPO_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Код используется для предоставления сведений о ИОУ, произведенных за пределами Российской Федерации."
+                Message = "Код используется для предоставления сведений о ИОУ, произведенных за пределами Российской Федерации."
             });
         }
         return result;
@@ -543,7 +544,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "OperationDate_DB",
                 Value = forms[line].OperationDate_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата операции не входит в отчетный период."
+                Message = "Дата операции не входит в отчетный период."
             });
         }
         else
@@ -564,7 +565,7 @@ public class CheckF12 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "OperationDate_DB",
                     Value = forms[line].OperationDate_DB,
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату операции более чем на 10 дней."
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 10 дней."
                 });
             }
             else if (operationCodeWithDeadline5.Contains(opCode) && (pEnd - pMid).Days > 5)
@@ -575,7 +576,7 @@ public class CheckF12 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "OperationDate_DB",
                     Value = forms[line].OperationDate_DB,
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату операции более чем на 5 дней."
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 5 дней."
                 });
             }
             else if (operationCodeWithDeadline1.Contains(opCode) && (pEnd - pMid).Days > 1)
@@ -586,7 +587,7 @@ public class CheckF12 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "OperationDate_DB",
                     Value = forms[line].OperationDate_DB,
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату операции более чем на 1 день."
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 1 день."
                 });
             }
         }
@@ -618,7 +619,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата акта инвентаризации выходит за границы отчетного периода."
+                Message = "Дата акта инвентаризации выходит за границы отчетного периода."
             });
         }
         return result;
@@ -640,7 +641,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PassportNumber_DB",
                 Value = forms[line].PassportNumber_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -662,7 +663,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "NameIOU_DB",
                 Value = forms[line].NameIOU_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -684,7 +685,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "FactoryNumber_DB",
                 Value = forms[line].FactoryNumber_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -711,7 +712,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Mass_DB",
                 Value = forms[line].Mass_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -738,7 +739,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Mass_DB",
                 Value = Mass_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте правильность предоставления сведений о массе ИОУ."
+                Message = "Проверьте правильность предоставления сведений о массе ИОУ."
             });
         }
         return result;
@@ -766,7 +767,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreatorOKPO_DB",
                 Value = CreatorOKPO_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте код ОКПО организации-изготовителя."
+                Message = "Проверьте код ОКПО организации-изготовителя."
             });
         }
         return result;
@@ -793,7 +794,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreatorOKPO_DB",
                 Value = CreatorOKPO_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Укажите код ОКПО организации изготовителя."
+                Message = "Формат ввода данных не соответствует приказу. Укажите код ОКПО организации изготовителя."
             });
         }
         return result;
@@ -818,7 +819,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreatorOKPO_DB",
                 Value = forms[line].CreatorOKPO_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес организации-изготовителя ИОУ."
+                Message = "Необходимо указать в примечании наименование и адрес организации-изготовителя ИОУ."
             });
         }
         return result;
@@ -842,7 +843,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "CreationDate_DB",
                 Value = forms[line].CreationDate_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата выпуска не может быть позже даты операции."
+                Message = "Дата выпуска не может быть позже даты операции."
             });
         }
         return result;
@@ -879,7 +880,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "SignedServicePeriod_DB",
                 Value = signedServicePeriod.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для ИОУ истек НСС, следует продлить НСС либо снять с учета с одновременной постановкой на учет как РАО (при выполнении критериев отнесения к РАО)."
+                Message = "Для ИОУ истек НСС, следует продлить НСС либо снять с учета с одновременной постановкой на учет как РАО (при выполнении критериев отнесения к РАО)."
                           + $"{Environment.NewLine}Проверьте, что НСС указан в месяцах."
             });
         }
@@ -904,7 +905,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
                 Value = propertyCode.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Выберите идентификатор, соотвествующий форме собственности ИОУ."
+                Message = "Формат ввода данных не соответствует приказу. Выберите идентификатор, соотвествующий форме собственности ИОУ."
             });
         }
         return result;
@@ -932,7 +933,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
                 Value = propertyCode?.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование субъекта Российской Федерации, в собственности которого находится объект учета."
+                Message = "Необходимо указать в примечании наименование субъекта Российской Федерации, в собственности которого находится объект учета."
             });
         }
         return result;
@@ -960,7 +961,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
                 Value = propertyCode?.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование муниципального образования, в собственности которого находится объект учета."
+                Message = "Необходимо указать в примечании наименование муниципального образования, в собственности которого находится объект учета."
             });
         }
         return result;
@@ -988,7 +989,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
                 Value = propertyCode?.ToString(),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
+                Message = "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
             });
         }
         return result;
@@ -1016,7 +1017,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Owner_DB",
                 Value = owner,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. В случае, если правообладатель - российское юридическое лицо, необходимо указать его код ОКПО."
+                Message = "Формат ввода данных не соответствует приказу. В случае, если правообладатель - российское юридическое лицо, необходимо указать его код ОКПО."
             });
         }
         return result;
@@ -1043,7 +1044,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Owner_DB",
                 Value = owner,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. В случае, если правообладатель - иностранное государство, необходимо указать его краткое наименование в соответствии с ОКСМ."
+                Message = "Формат ввода данных не соответствует приказу. В случае, если правообладатель - иностранное государство, необходимо указать его краткое наименование в соответствии с ОКСМ."
             });
         }
         return result;
@@ -1070,7 +1071,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Owner_DB",
                 Value = owner,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
+                Message = "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
             });
             return result;
         }
@@ -1083,7 +1084,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "Owner_DB",
                 Value = forms[line].Owner_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
+                Message = "Необходимо указать в примечании наименование и адрес правообладателя (собственника или обладателя иного вещного права) на ИОУ."
             });
         }
         return result;
@@ -1118,7 +1119,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Необходимо указать вид документа в соответствии с таблицей 3 приложения № 2 к приказу Госкорпорации \"Росатом\" от 07.12.2020 № 1/13-НПА."
+                Message = "Формат ввода данных не соответствует приказу. Необходимо указать вид документа в соответствии с таблицей 3 приложения № 2 к приказу Госкорпорации \"Росатом\" от 07.12.2020 № 1/13-НПА."
             });
         }
         valid = (documentVid == 19 ? CheckNotePresence(new List<Form>(forms), notes, line, 13) : true);
@@ -1130,7 +1131,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать примечание к указанному виду документа."
+                Message = "Необходимо указать примечание к указанному виду документа."
             });
         }
         valid = forms[line].OperationCode_DB == "10" ? documentVid == 1 : true;
@@ -1142,7 +1143,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции инвентаризации вид документа должен быть равен 1."
+                Message = "При коде операции инвентаризации вид документа должен быть равен 1."
             });
         }
         valid = forms[line].OperationCode_DB == "66" ? documentVid == 13 : true;
@@ -1154,7 +1155,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentVid_DB",
                 Value = Convert.ToString(documentVid),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции 66 вид документа должен быть равен 13."
+                Message = "При коде операции 66 вид документа должен быть равен 13."
             });
         }
         return result;
@@ -1177,7 +1178,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentNumber_DB",
                 Value = DocumentNumber_DB,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -1206,7 +1207,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа не может быть позже даты операции."
+                Message = "Дата документа не может быть позже даты операции."
             });
         }
         return result;
@@ -1235,7 +1236,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа должна соответствовать дате операции."
+                Message = "Дата документа должна соответствовать дате операции."
             });
         }
         return result;
@@ -1266,7 +1267,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "DocumentDate_DB",
                 Value = documentDate,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату акта инвентаризации более, чем на 10 рабочих дней."
+                Message = "Дата окончания отчетного периода превышает дату акта инвентаризации более, чем на 10 рабочих дней."
             });
         }
         return result;
@@ -1304,7 +1305,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО отчитывающейся организации."
+                Message = "Для выбранного кода операции указывается код ОКПО отчитывающейся организации."
             });
         }
         return result;
@@ -1332,7 +1333,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО контрагента."
+                Message = "Для выбранного кода операции указывается код ОКПО контрагента."
             });
         }
         return result;
@@ -1362,7 +1363,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Укажите код ОКПО контрагента."
+                Message = "Формат ввода данных не соответствует приказу. Укажите код ОКПО контрагента."
             });
         }
         return result;
@@ -1390,7 +1391,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для выбранного кода операции указывается код ОКПО организации, осуществившей продление НСС."
+                Message = "Для выбранного кода операции указывается код ОКПО организации, осуществившей продление НСС."
             });
         }
         return result;
@@ -1418,7 +1419,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Следует указать код ОКПО контрагента, либо \"Минобороны\" без кавычек."
+                Message = "Формат ввода данных не соответствует приказу. Следует указать код ОКПО контрагента, либо \"Минобороны\" без кавычек."
             });
         }
         return result;
@@ -1446,7 +1447,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу."
+                Message = "Формат ввода данных не соответствует приказу."
             });
         }
         valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -1458,7 +1459,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "ProviderOrRecieverOKPO_DB",
                 Value = providerOrRecieverOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо добавить примечание."
+                Message = "Необходимо добавить примечание."
             });
         }
         return result;
@@ -1495,7 +1496,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = transporterOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При выбранном коде операции траспортирование не производится."
+                Message = "При выбранном коде операции траспортирование не производится."
             });
         }
         return result;
@@ -1523,7 +1524,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = transporterOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика."
+                Message = "Необходимо указать код ОКПО организации перевозчика."
             });
         }
         return result;
@@ -1552,7 +1553,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = transporterOKPO,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"Минобороны\" без кавычек."
+                Message = "Необходимо указать код ОКПО организации перевозчика, либо \"Минобороны\" без кавычек."
             });
         }
         return result;
@@ -1576,7 +1577,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackName_DB",
                 Value = packName,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -1600,7 +1601,7 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackType_DB",
                 Value = packType,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
             });
         }
         return result;
@@ -1624,7 +1625,58 @@ public class CheckF12 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PackNumber_DB",
                 Value = packNumber,
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+                Message = "Формат ввода данных не соответствует приказу. Графа не может быть пустой."
+            });
+        }
+        return result;
+    }
+
+    #endregion
+
+    #region Check056
+
+    //Наличие строк дубликатов
+    private static List<CheckError> Check_056(List<Form12> forms)
+    {
+        List<CheckError> result = new();
+        HashSet<int> duplicatesLinesSet = new();
+        for (var i = 0; i < forms.Count; i++)
+        {
+            var currentForm = forms[i];
+            for (var j = i + 1; j < forms.Count;j++)
+            {
+                var formToCompare = forms[j];
+                var isDuplicate = formToCompare.OperationCode_DB == currentForm.OperationCode_DB 
+                                  && formToCompare.OperationDate_DB == currentForm.OperationDate_DB
+                                  && formToCompare.PassportNumber_DB == currentForm.PassportNumber_DB
+                                  && formToCompare.NameIOU_DB == currentForm.NameIOU_DB
+                                  && formToCompare.FactoryNumber_DB == currentForm.FactoryNumber_DB
+                                  && formToCompare.Mass_DB == currentForm.Mass_DB
+                                  && formToCompare.CreatorOKPO_DB == currentForm.CreatorOKPO_DB
+                                  && formToCompare.CreationDate_DB == currentForm.CreationDate_DB
+                                  && formToCompare.SignedServicePeriod_DB == currentForm.SignedServicePeriod_DB
+                                  && formToCompare.PropertyCode_DB == currentForm.PropertyCode_DB
+                                  && formToCompare.Owner_DB == currentForm.Owner_DB
+                                  && formToCompare.DocumentVid_DB == currentForm.DocumentVid_DB
+                                  && formToCompare.DocumentNumber_DB == currentForm.DocumentNumber_DB
+                                  && formToCompare.DocumentDate_DB == currentForm.DocumentDate_DB
+                                  && formToCompare.ProviderOrRecieverOKPO_DB == currentForm.ProviderOrRecieverOKPO_DB;
+                if (!isDuplicate) continue;
+                duplicatesLinesSet.Add(i + 1);
+                duplicatesLinesSet.Add(j + 1);
+            }
+        }
+        var duplicateLines = string.Join(", ", duplicatesLinesSet.Order());
+        if (duplicatesLinesSet.Count != 0)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_12",
+                Row = duplicateLines,
+                Column = "2 - 16",
+                Value = "",
+                Message = $"Данные граф 2-16 в строках {duplicateLines} продублированы. " +
+                          $"{Environment.NewLine}Следует проверить правильность предоставления данных."
             });
         }
         return result;
