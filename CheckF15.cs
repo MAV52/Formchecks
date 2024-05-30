@@ -14,7 +14,7 @@ namespace Client_App.Commands.SyncCommands.CheckForm;
 
 public class CheckF15 : CheckBase
 {
-        #region Properties
+    #region Properties
 
     private static readonly string[] OperationCode_DB_Valids =
     {
@@ -87,7 +87,7 @@ public class CheckF15 : CheckBase
             R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
 #endif
         }
-        if (holidays_specific.Count == 0)
+        if (HolidaysSpecific.Count == 0)
         {
 #if DEBUG
             Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\")), "data", "Spravochniki", "Holidays.xlsx"));
@@ -95,10 +95,10 @@ public class CheckF15 : CheckBase
             Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"Holidays.xlsx"));
 #endif
         }
+        var formsList = rep.Rows15.ToList<Form15>();
         foreach (var key in rep.Rows15)
         {
             var form = (Form15)key;
-            var formsList = rep.Rows15.ToList<Form15>();
             var notes = rep.Notes.ToList<Note>();
             var forms10 = reps.Master_DB.Rows10.ToList<Form10>();
             errorList.AddRange(Check_001(formsList, currentFormLine));
@@ -149,6 +149,7 @@ public class CheckF15 : CheckBase
 
             currentFormLine++;
         }
+        errorList.AddRange(Check_025(formsList));
 
         var index = 0;
         foreach (var error in errorList)
@@ -242,7 +243,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new string[] { "29","39","49","59","97","98","99" };
+        var applicableOperationCodes = new[] { "29","39","49","59","97","98","99" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 2;
         var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -268,7 +269,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new string[] { "21","22","25","26","27","28","29","42","43","44","45","49","51","71","72","84","98" };
+        var applicableOperationCodes = new[] { "21","22","25","26","27","28","29","42","43","44","45","49","51","71","72","84","98" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = true;
         if (!valid)
@@ -1410,6 +1411,57 @@ public class CheckF15 : CheckBase
                 Column = "StoragePlaceCode_DB",
                 Value = Convert.ToString(field_value),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
+            });
+        }
+        return result;
+    }
+
+    #endregion
+
+    #region Check025
+
+    //Наличие строк дубликатов
+    private static List<CheckError> Check_025(List<Form15> forms)
+    {
+        List<CheckError> result = new();
+        HashSet<int> duplicatesLinesSet = new();
+        var comparator = new CustomNullStringWithTrimComparer();
+        for (var i = 0; i < forms.Count; i++)
+        {
+            var currentForm = forms[i];
+            for (var j = i + 1; j < forms.Count; j++)
+            {
+                var formToCompare = forms[j];
+                var isDuplicate = comparator.Compare(formToCompare.OperationCode_DB, currentForm.OperationCode_DB) == 0
+                                  && comparator.Compare(formToCompare.OperationDate_DB, currentForm.OperationDate_DB) == 0
+                                  && comparator.Compare(formToCompare.PassportNumber_DB, currentForm.PassportNumber_DB) == 0
+                                  && comparator.Compare(formToCompare.Type_DB, currentForm.Type_DB) == 0
+                                  && comparator.Compare(formToCompare.Radionuclids_DB, currentForm.Radionuclids_DB) == 0
+                                  && comparator.Compare(formToCompare.FactoryNumber_DB, currentForm.FactoryNumber_DB) == 0
+                                  && formToCompare.Quantity_DB == currentForm.Quantity_DB
+                                  && comparator.Compare(formToCompare.Activity_DB, currentForm.Activity_DB) == 0
+                                  && comparator.Compare(formToCompare.CreationDate_DB, currentForm.CreationDate_DB) == 0
+                                  && comparator.Compare(formToCompare.StatusRAO_DB, currentForm.StatusRAO_DB) == 0
+                                  && formToCompare.DocumentVid_DB == currentForm.DocumentVid_DB
+                                  && comparator.Compare(formToCompare.DocumentNumber_DB, currentForm.DocumentNumber_DB) == 0
+                                  && comparator.Compare(formToCompare.DocumentDate_DB, currentForm.DocumentDate_DB) == 0
+                                  && comparator.Compare(formToCompare.ProviderOrRecieverOKPO_DB, currentForm.ProviderOrRecieverOKPO_DB) == 0;
+                if (!isDuplicate) continue;
+                duplicatesLinesSet.Add(i + 1);
+                duplicatesLinesSet.Add(j + 1);
+            }
+        }
+        var duplicateLines = string.Join(", ", duplicatesLinesSet.Order());
+        if (duplicatesLinesSet.Count != 0)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_15",
+                Row = duplicateLines,
+                Column = "2 - 15",
+                Value = "",
+                Message = $"Данные граф 2-15 в строках {duplicateLines} продублированы. " +
+                          $"{Environment.NewLine}Следует проверить правильность предоставления данных."
             });
         }
         return result;
