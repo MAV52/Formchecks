@@ -256,8 +256,7 @@ public abstract class CheckBase
                 {"name", worksheet.Cells[i, 1].Text},
                 {"value", worksheet.Cells[i, 5].Text},
                 {"unit", worksheet.Cells[i, 6].Text},
-                {"type", worksheet.Cells[i, 7].Text},
-                {"mass", worksheet.Cells[i, 9].Text}
+                {"code", worksheet.Cells[i, 8].Text}
             });
             i++;
         }

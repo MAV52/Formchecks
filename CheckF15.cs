@@ -242,7 +242,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new string[] { "29,39,49,59,97,98,99" };
+        var applicableOperationCodes = new string[] { "29","39","49","59","97","98","99" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 2;
         var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -268,7 +268,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new string[] { "21,22,25,26,27,28,29,42,43,44,45,49,51,71,72,84,98" };
+        var applicableOperationCodes = new string[] { "21","22","25","26","27","28","29","42","43","44","45","49","51","71","72","84","98" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = true;
         if (!valid)
@@ -813,7 +813,7 @@ public class CheckF15 : CheckBase
     private static List<CheckError> Check_011_misc(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
-        string[] nonApplicableOperationCodes = { "14", "28", "38", "76" };
+        string[] nonApplicableOperationCodes = { "14", "28", "38", "76", "41" };
         string[] validStatus = { "1", "2", "3", "4", "6", "7", "9" };
         var operationCode = forms[line].OperationCode_DB;
         if (nonApplicableOperationCodes.Contains(operationCode)) return result;
