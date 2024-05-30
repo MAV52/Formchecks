@@ -602,7 +602,7 @@ public class CheckF16 : CheckBase
         if (nonApplicableOperationCodes.Contains(operationCode)) return result;
         var applicableRAOStatuses = new string[] { "1", "2", "3", "4", "7", "9" };
         var StatusRAO_DB = forms[line].StatusRAO_DB;
-        var valid = applicableRAOStatuses.Contains(StatusRAO_DB);
+        var valid = applicableRAOStatuses.Contains(StatusRAO_DB) || StatusRAO_DB.Length >= 8;
         if (!valid)
         {
             result.Add(new CheckError

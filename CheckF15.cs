@@ -818,7 +818,7 @@ public class CheckF15 : CheckBase
         var operationCode = forms[line].OperationCode_DB;
         if (nonApplicableOperationCodes.Contains(operationCode)) return result;
         var status = forms[line].StatusRAO_DB;
-        var valid = validStatus.Contains(status);
+        var valid = validStatus.Contains(status) || status.Length >= 8;
         if (!valid)
         {
             result.Add(new CheckError
