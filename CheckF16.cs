@@ -58,6 +58,7 @@ public class CheckF16 : CheckBase
     };
 
     #endregion
+
     #region CheckTotal
 
     public static List<CheckError> Check_Total(Reports reps, Report rep)
@@ -88,7 +89,7 @@ public class CheckF16 : CheckBase
             R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
 #endif
         }
-        if (holidays_specific.Count == 0)
+        if (HolidaysSpecific.Count == 0)
         {
 #if DEBUG
             Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\")), "data", "Spravochniki", "Holidays.xlsx"));
@@ -979,12 +980,12 @@ public class CheckF16 : CheckBase
             .Replace(" ", "")
             .Replace(',', ';')
             .Split(';');
-        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "у"))) return result;
-        var activityReal = 1.0;
+        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "у"))) 
+            return result;
         if (!double.TryParse(activity.Replace(".", ",").Replace("е", "e"),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
                 CultureInfo.CreateSpecificCulture("ru-RU"),
-                out activityReal))
+                out var activityReal))
         {
             if (activityReal is <= 10e+01 or > 10e+20)
             {
