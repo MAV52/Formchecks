@@ -94,6 +94,14 @@ public abstract class CheckF11 : CheckBase
             D_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"D.xlsx"));
 #endif
         }
+        if (R.Count == 0)
+        {
+#if DEBUG
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "R.xlsx"));
+#else
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
+#endif
+        }
         if (HolidaysSpecific.Count == 0)
         {
 #if DEBUG
@@ -106,7 +114,7 @@ public abstract class CheckF11 : CheckBase
         foreach (var key in rep.Rows11)
         {
             var form = (Form11)key;
-            
+
             var notes = rep.Notes.ToList<Note>();
             var forms10 = reps.Master_DB.Rows10.ToList<Form10>();
             errorList.AddRange(Check_001(formsList, currentFormLine));
@@ -170,7 +178,7 @@ public abstract class CheckF11 : CheckBase
             errorList.AddRange(Check_061(formsList, currentFormLine));
             errorList.AddRange(Check_062(formsList, currentFormLine));
             errorList.AddRange(Check_063(formsList, currentFormLine));
-            
+
             currentFormLine++;
         }
         errorList.AddRange(Check_064(formsList));
@@ -642,7 +650,7 @@ public abstract class CheckF11 : CheckBase
         var okpoRepJur = forms10[0].Okpo_DB ?? "";
         var okpoRepTerPodr = forms10[1].Okpo_DB ?? "";
         var owner = forms[line].Owner_DB;
-        var valid = !string.IsNullOrWhiteSpace(owner) 
+        var valid = !string.IsNullOrWhiteSpace(owner)
                     && (owner == okpoRepTerPodr || owner == okpoRepJur);
         if (!valid)
         {
@@ -672,7 +680,7 @@ public abstract class CheckF11 : CheckBase
         var valid = forms[line].OperationDate_DB != null;
         var pEnd = DateOnly.MinValue;
         var pMid = DateOnly.MinValue;
-        
+
         if (valid && rep is { StartPeriod_DB: not null, EndPeriod_DB: not null })
         {
             valid = DateOnly.TryParse(rep.StartPeriod_DB, out var pStart)
@@ -1203,12 +1211,12 @@ public abstract class CheckF11 : CheckBase
         {
             foreach (var nuclid in nuclidsList)
             {
-                if (D.TryGetValue(nuclid, out var value))
+                if (R.Any(x => x["name"] == nuclid) && float.TryParse(ConvertStringToExponential(R.First(x => x["name"] == nuclid)["D"]), out var value))
                 {
-                    dValueList.Add(value);
+                    dValueList.Add(value * 1e12);
                 }
             }
-            if (dValueList.Count == 0)
+            /*if (dValueList.Count == 0)
             {
                 foreach (var nuclid in nuclidsList)
                 {
@@ -1220,7 +1228,7 @@ public abstract class CheckF11 : CheckBase
                         break;
                     }
                 }
-            }
+            }*/
             if (dValueList.Count == 0)
             {
                 result.Add(new CheckError
@@ -1239,6 +1247,7 @@ public abstract class CheckF11 : CheckBase
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
                 CultureInfo.CreateSpecificCulture("ru-RU"),
                 out var aValue);
+            aValue /= quantity != null && quantity != 0 ? (double)quantity : 1.0;
             if (valid)
             {
                 var adMinBound = dMaxValue == 0.0
@@ -1765,7 +1774,7 @@ public abstract class CheckF11 : CheckBase
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
-        
+
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         var valid = okpoRegex.IsMatch(providerOrRecieverOKPO)
                     && providerOrRecieverOKPO == repOKPO;
@@ -1852,7 +1861,7 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_053(List<Form11> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
-        string[] applicableOperationCodes = {                                 "66" };
+        string[] applicableOperationCodes = { "66" };
         var operationCode = forms[line].OperationCode_DB;
         var providerOrRecieverOKPO = forms[line].ProviderOrRecieverOKPO_DB ?? "";
         var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
@@ -2115,7 +2124,7 @@ public abstract class CheckF11 : CheckBase
         for (var i = 0; i < forms.Count; i++)
         {
             var currentForm = forms[i];
-            for (var j = i + 1; j < forms.Count;j++)
+            for (var j = i + 1; j < forms.Count; j++)
             {
                 var formToCompare = forms[j];
                 var isDuplicate = comparator.Compare(formToCompare.OperationCode_DB, currentForm.OperationCode_DB) == 0

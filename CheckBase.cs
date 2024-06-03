@@ -235,8 +235,13 @@ public abstract class CheckBase
                 {"name", worksheet.Cells[i, 1].Text},
                 {"value", worksheet.Cells[i, 5].Text},
                 {"unit", worksheet.Cells[i, 6].Text},
-                {"code", worksheet.Cells[i, 8].Text}
+                {"code", worksheet.Cells[i, 8].Text},
+                {"D", worksheet.Cells[i, 15].Text}
             });
+            if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)
+            {
+                R[^1]["D"] = double.MaxValue.ToString();
+            }
             i++;
         }
     }
@@ -296,9 +301,9 @@ public abstract class CheckBase
         }
         for (var day = dateMin; day <= dateMax; day = day.AddDays(1))
         {
-            var isWorkingDay = WorkDaysSpecific.Any(x => Equals(x, day)) 
-                               || !(day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday 
-                                    || HolidaysSpecific.Any(x => Equals(x, day)) 
+            var isWorkingDay = WorkDaysSpecific.Any(x => Equals(x, day))
+                               || !(day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+                                    || HolidaysSpecific.Any(x => Equals(x, day))
                                     || HolidaysGeneric.Any(x => Equals(x.Month, day.Month) && Equals(x.Day, day.Day)));
             if (isWorkingDay)
             {
