@@ -299,7 +299,7 @@ public abstract class CheckBase
         {
             return int.MaxValue;
         }
-        for (var day = dateMin; day <= dateMax; day = day.AddDays(1))
+        for (var day = dateMin.AddDays(1); day <= dateMax; day = day.AddDays(1))
         {
             var isWorkingDay = WorkDaysSpecific.Any(x => Equals(x, day))
                                || !(day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
