@@ -1243,7 +1243,7 @@ public abstract class CheckF11 : CheckBase
             }
             var dMinValue = dValueList.Min();
             var dMaxValue = dValueList.Max();
-            valid = double.TryParse(activity,
+            valid = double.TryParse(ConvertStringToExponential(activity),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
                 CultureInfo.CreateSpecificCulture("ru-RU"),
                 out var aValue);
