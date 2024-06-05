@@ -1687,8 +1687,7 @@ public abstract class CheckF13 : CheckBase
                 Row = duplicateLines,
                 Column = "2 - 17",
                 Value = "",
-                Message = $"Данные граф 2-17 в строках {duplicateLines} продублированы. " +
-                          $"{Environment.NewLine}Следует проверить правильность предоставления данных."
+                Message = $"Данные граф 2-17 в строках {duplicateLines} продублированы. Следует проверить правильность предоставления данных."
             });
         }
         return result;

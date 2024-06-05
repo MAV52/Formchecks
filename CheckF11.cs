@@ -97,7 +97,7 @@ public abstract class CheckF11 : CheckBase
         if (R.Count == 0)
         {
 #if DEBUG
-            R_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "R.xlsx"));
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\")), "data", "Spravochniki", "R.xlsx"));
 #else
             R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
 #endif
@@ -114,7 +114,7 @@ public abstract class CheckF11 : CheckBase
         foreach (var key in rep.Rows11)
         {
             var form = (Form11)key;
-
+            
             var notes = rep.Notes.ToList<Note>();
             var forms10 = reps.Master_DB.Rows10.ToList<Form10>();
             errorList.AddRange(Check_001(formsList, currentFormLine));
@@ -178,7 +178,7 @@ public abstract class CheckF11 : CheckBase
             errorList.AddRange(Check_061(formsList, currentFormLine));
             errorList.AddRange(Check_062(formsList, currentFormLine));
             errorList.AddRange(Check_063(formsList, currentFormLine));
-
+            
             currentFormLine++;
         }
         errorList.AddRange(Check_064(formsList));
@@ -650,7 +650,7 @@ public abstract class CheckF11 : CheckBase
         var okpoRepJur = forms10[0].Okpo_DB ?? "";
         var okpoRepTerPodr = forms10[1].Okpo_DB ?? "";
         var owner = forms[line].Owner_DB;
-        var valid = !string.IsNullOrWhiteSpace(owner)
+        var valid = !string.IsNullOrWhiteSpace(owner) 
                     && (owner == okpoRepTerPodr || owner == okpoRepJur);
         if (!valid)
         {
@@ -670,7 +670,7 @@ public abstract class CheckF11 : CheckBase
 
     #region Check019
 
-    //Дата документа входит в отчетный период с учетом срока подачи отчета в днях (колонка 3)
+    //Дата операции входит в отчетный период с учетом срока подачи отчета в днях (колонка 3)
     private static List<CheckError> Check_019(List<Form11> forms, Report rep, int line)
     {
         List<CheckError> result = new();
@@ -680,7 +680,7 @@ public abstract class CheckF11 : CheckBase
         var valid = forms[line].OperationDate_DB != null;
         var pEnd = DateOnly.MinValue;
         var pMid = DateOnly.MinValue;
-
+        
         if (valid && rep is { StartPeriod_DB: not null, EndPeriod_DB: not null })
         {
             valid = DateOnly.TryParse(rep.StartPeriod_DB, out var pStart)
@@ -915,7 +915,7 @@ public abstract class CheckF11 : CheckBase
             {
                 FormNum = "form_11",
                 Row = (line + 1).ToString(),
-                Column = "Quantity_DB",
+                Column = "FactoryNumber_DB",
                 Value = quantity?.ToString(),
                 Message = "Формат ввода данных не соответствует приказу. Номера ЗРИ должны быть разделены точкой с запятой"
             });
@@ -1211,24 +1211,26 @@ public abstract class CheckF11 : CheckBase
         {
             foreach (var nuclid in nuclidsList)
             {
-                if (R.Any(x => x["name"] == nuclid) && float.TryParse(ConvertStringToExponential(R.First(x => x["name"] == nuclid)["D"]), out var value))
+                var expFromR = ConvertStringToExponential(R.First(x => x["name"] == nuclid)["D"]);
+                if (R.Any(x => x["name"] == nuclid) 
+                    && float.TryParse(expFromR, out var value))
                 {
                     dValueList.Add(value * 1e12);
                 }
             }
-            /*if (dValueList.Count == 0)
-            {
-                foreach (var nuclid in nuclidsList)
-                {
-                    foreach (var key in D.Keys.Where(key => key.Contains(nuclid)))
-                    {
-                        dValueList.Add(D[key] / (quantity != null && quantity != 0
-                            ? (double)quantity
-                            : 1.0));
-                        break;
-                    }
-                }
-            }*/
+            //if (dValueList.Count == 0)
+            //{
+            //    foreach (var nuclid in nuclidsList)
+            //    {
+            //        foreach (var key in D.Keys.Where(key => key.Contains(nuclid)))
+            //        {
+            //            dValueList.Add(D[key] / (quantity != null && quantity != 0
+            //                ? (double)quantity
+            //                : 1.0));
+            //            break;
+            //        }
+            //    }
+            //}
             if (dValueList.Count == 0)
             {
                 result.Add(new CheckError
@@ -1282,10 +1284,11 @@ public abstract class CheckF11 : CheckBase
     private static List<CheckError> Check_036(List<Form11> forms, int line)
     {
         List<CheckError> result = new();
+        var opCode = forms[line].OperationCode_DB ?? "";
         var signedServicePeriod = forms[line].SignedServicePeriod_DB ?? 0;
         var creationDate = forms[line].CreationDate_DB;
         var operationDate = forms[line].OperationDate_DB;
-
+        if (opCode == "41") return result;
         var valid = false;
         if (!string.IsNullOrEmpty(creationDate)
             && !string.IsNullOrEmpty(operationDate)
@@ -1304,8 +1307,8 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "SignedServicePeriod_DB",
                 Value = signedServicePeriod.ToString(),
-                Message = "Для ЗРИ истек НСС, следует продлить НСС либо снять с учета с одновременной постановкой на учет как РАО (при выполнении критериев отнесения к РАО)."
-                          + $"{Environment.NewLine}Проверьте, что НСС указан в месяцах."
+                Message = "Для ЗРИ истек НСС, следует продлить НСС либо снять с учета с одновременной постановкой на учет как РАО (при выполнении критериев отнесения к РАО). " +
+                          "Проверьте, что НСС указан в месяцах."
             });
         }
         return result;
@@ -1329,7 +1332,7 @@ public abstract class CheckF11 : CheckBase
                 Row = (line + 1).ToString(),
                 Column = "PropertyCode_DB",
                 Value = propertyCode.ToString(),
-                Message = "Формат ввода данных не соответствует приказу. Выберите идентификатор, соотвествующий форме собственности ЗРИ"
+                Message = "Формат ввода данных не соответствует приказу. Выберите идентификатор, соответствующий форме собственности ЗРИ"
             });
         }
         return result;
@@ -1774,7 +1777,7 @@ public abstract class CheckF11 : CheckBase
             ? forms10[1].Okpo_DB
             : forms10[0].Okpo_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
-
+        
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         var valid = okpoRegex.IsMatch(providerOrRecieverOKPO)
                     && providerOrRecieverOKPO == repOKPO;
@@ -2159,8 +2162,7 @@ public abstract class CheckF11 : CheckBase
                 Row = duplicateLines,
                 Column = "2 - 19",
                 Value = "",
-                Message = $"Данные граф 2-19 в строках {duplicateLines} продублированы. " +
-                          $"{Environment.NewLine}Следует проверить правильность предоставления данных."
+                Message = $"Данные граф 2-19 в строках {duplicateLines} продублированы. Следует проверить правильность предоставления данных."
             });
         }
         return result;
