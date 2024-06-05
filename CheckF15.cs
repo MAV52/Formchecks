@@ -114,7 +114,6 @@ public class CheckF15 : CheckBase
             errorList.AddRange(Check_002_84(formsList, currentFormLine));
             errorList.AddRange(Check_002_71(formsList, currentFormLine));
             errorList.AddRange(Check_003_03(formsList, rep, currentFormLine));
-            errorList.AddRange(Check_003_15(formsList, rep, currentFormLine));
             errorList.AddRange(Check_004(formsList, currentFormLine));
             errorList.AddRange(Check_005(formsList, currentFormLine));
             errorList.AddRange(Check_006_a(formsList, currentFormLine));
@@ -243,7 +242,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new[] { "29","39","49","59","97","98","99" };
+        var applicableOperationCodes = new string[] { "29,39,49,59,97,98,99" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 2;
         var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
@@ -269,7 +268,7 @@ public class CheckF15 : CheckBase
     {
         List<CheckError> result = new();
         var operationCode = forms[line].OperationCode_DB;
-        var applicableOperationCodes = new[] { "21","22","25","26","27","28","29","42","43","44","45","49","51","71","72","84","98" };
+        var applicableOperationCodes = new string[] { "21,22,25,26,27,28,29,42,43,44,45,49,51,71,72,84,98" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var valid = true;
         if (!valid)
@@ -460,21 +459,23 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check003_03
+
+    //Дата операции входит в отчетный период с учетом срока подачи отчета в днях (колонка 3)
     private static List<CheckError> Check_003_03(List<Form15> forms, Report rep, int line)
     {
         List<CheckError> result = new();
         string[] nonApplicableOperationCodes = { "01", "10" };
-        var operationCode = forms[line].OperationCode_DB;
-        var operationDate = forms[line].OperationDate_DB;
-        if (nonApplicableOperationCodes.Contains(operationCode)) return result;
-        var valid = operationDate != null;
-        DateTime pEnd;
-        DateTime pMid;
+        var opCode = forms[line].OperationCode_DB;
+        var opDate = forms[line].OperationDate_DB;
+        if (nonApplicableOperationCodes.Contains(opCode)) return result;
+        var valid = opDate != null;
+        var pEnd = DateOnly.MinValue;
+        var pMid = DateOnly.MinValue;
         if (valid && rep is { StartPeriod_DB: not null, EndPeriod_DB: not null })
         {
-            valid = DateTime.TryParse(rep.StartPeriod_DB, out var pStart)
-                    && DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
-                    && DateTime.TryParse(operationDate, out pMid)
+            valid = DateOnly.TryParse(rep.StartPeriod_DB, out var pStart)
+                    && DateOnly.TryParse(rep.EndPeriod_DB, out pEnd)
+                    && DateOnly.TryParse(opDate, out pMid)
                     && pMid >= pStart && pMid <= pEnd;
         }
         if (!valid)
@@ -484,43 +485,53 @@ public class CheckF15 : CheckBase
                 FormNum = "form_15",
                 Row = (line + 1).ToString(),
                 Column = "OperationDate_DB",
-                Value = Convert.ToString(operationDate),
+                Value = Convert.ToString(opDate),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата операции не входит в отчетный период."
             });
         }
-        return result;
-    }
-
-    #endregion
-
-    #region Check003_15
-    private static List<CheckError> Check_003_15(List<Form15> forms, Report rep, int line)
-    {
-        List<CheckError> result = new();
-        string[] applicableOperationCodes = { "10" };
-        var operationCode = forms[line].OperationCode_DB;
-        var documentDate = forms[line].DocumentDate_DB;
-        if (!applicableOperationCodes.Contains(operationCode)) return result;
-        var valid = documentDate != null;
-        DateTime pEnd;
-        DateTime pMid;
-        if (valid && rep is { StartPeriod_DB: not null, EndPeriod_DB: not null })
+        else
         {
-            valid = DateTime.TryParse(rep.StartPeriod_DB, out var pStart)
-                    && DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
-                    && DateTime.TryParse(documentDate, out pMid)
-                    && pMid >= pStart && pMid <= pEnd;
-        }
-        if (!valid)
-        {
-            result.Add(new CheckError
+            string[] operationCodeWithDeadline1 = { "71" };
+            string[] operationCodeWithDeadline5 = { "73", "74", "75" };
+            string[] operationCodeWithDeadline10 =
             {
-                FormNum = "form_15",
-                Row = (line + 1).ToString(),
-                Column = "DocumentDate_DB",
-                Value = Convert.ToString(documentDate),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа не входит в отчетный период."
-            });
+                "11", "12", "15", "17", "18", "21", "22", "25", "27", "28", "29", "31", "32", "35", "37", "38", "39",
+                "41", "42", "43", "46", "47", "48", "53", "54", "58", "61", "62", "63", "64", "65", "66", "67", "68",
+                "72", "81", "82", "83", "84", "85", "86", "87", "88", "97", "98", "99"
+            };
+            if (operationCodeWithDeadline10.Contains(opCode) && WorkdaysBetweenDates(pMid, pEnd) > 10)
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_15",
+                    Row = (line + 1).ToString(),
+                    Column = "OperationDate_DB",
+                    Value = forms[line].OperationDate_DB,
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 10 дней."
+                });
+            }
+            else if (operationCodeWithDeadline5.Contains(opCode) && WorkdaysBetweenDates(pMid, pEnd) > 5)
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_15",
+                    Row = (line + 1).ToString(),
+                    Column = "OperationDate_DB",
+                    Value = forms[line].OperationDate_DB,
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 5 дней."
+                });
+            }
+            else if (operationCodeWithDeadline1.Contains(opCode) && WorkdaysBetweenDates(pMid, pEnd) > 1)
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_15",
+                    Row = (line + 1).ToString(),
+                    Column = "OperationDate_DB",
+                    Value = forms[line].OperationDate_DB,
+                    Message = "Дата окончания отчетного периода превышает дату операции более чем на 1 день."
+                });
+            }
         }
         return result;
     }
@@ -675,17 +686,39 @@ public class CheckF15 : CheckBase
     private static List<CheckError> Check_008(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
-        var quantityDB = forms[line].Quantity_DB;
-        var valid = quantityDB != null;
-        if (!valid)
+        var factoryNum = forms[line].FactoryNumber_DB;
+        var quantity = forms[line].Quantity_DB;
+        if (factoryNum == null) return result;
+        if (quantity == null)
         {
             result.Add(new CheckError
             {
                 FormNum = "form_15",
                 Row = (line + 1).ToString(),
                 Column = "Quantity_DB",
-                Value = Convert.ToString(quantityDB),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Заполните сведения о количестве ЗРИ, переведенных в ОЗИИИ"
+                Value = Convert.ToString(quantity),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + 
+                          "Заполните сведения о количестве ЗРИ, переведенных в ОЗИИИ"
+            });
+            return result;
+        }
+        var valid = !string.IsNullOrWhiteSpace(factoryNum)
+                    && !factoryNum.Contains(',');
+        if (quantity > 1 && !factoryNum.Contains(';')
+            || quantity == 1 && factoryNum.Contains(';'))
+        {
+            valid = false;
+        }
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_11",
+                Row = (line + 1).ToString(),
+                Column = "Quantity_DB",
+                Value = quantity?.ToString(),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + 
+                          "Формат ввода данных не соответствует приказу. Номера ЗРИ должны быть разделены точкой с запятой"
             });
         }
         return result;
@@ -749,17 +782,17 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check011_OKPO
+
     private static List<CheckError> Check_011_OKPO(List<Form15> forms, List<Form10> forms10, int line)
     {
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "14", "28", "38" };
         var operationCode = forms[line].OperationCode_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
-        var status = forms[line].StatusRAO_DB;
-        var repOKPO = !string.IsNullOrWhiteSpace(forms10[1].Okpo_DB)
-            ? forms10[1].Okpo_DB
-            : forms10[0].Okpo_DB;
-        var valid = status == repOKPO;
+        var status = forms[line].StatusRAO_DB ?? "";
+        var jurOKPO = forms10[0].Okpo_DB ?? "";
+        var obOKPO = forms10[1].Okpo_DB ?? "";
+        var valid = status == jurOKPO || status == obOKPO;
         if (!valid)
         {
             result.Add(new CheckError
@@ -777,6 +810,7 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check011_76
+
     private static List<CheckError> Check_011_76(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
@@ -802,9 +836,12 @@ public class CheckF15 : CheckBase
     #endregion
 
     #region Check011_41
+
+    //Надо сделать
     private static List<CheckError> Check_011_41(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
+
         return result;
     }
 
@@ -814,12 +851,12 @@ public class CheckF15 : CheckBase
     private static List<CheckError> Check_011_misc(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
-        string[] nonApplicableOperationCodes = { "14", "28", "38", "76", "41" };
+        string[] nonApplicableOperationCodes = { "14", "28", "38", "41", "76" };
         string[] validStatus = { "1", "2", "3", "4", "6", "7", "9" };
         var operationCode = forms[line].OperationCode_DB;
         if (nonApplicableOperationCodes.Contains(operationCode)) return result;
         var status = forms[line].StatusRAO_DB;
-        var valid = validStatus.Contains(status) || status.Length >= 8;
+        var valid = validStatus.Contains(status);
         if (!valid)
         {
             result.Add(new CheckError
@@ -843,6 +880,7 @@ public class CheckF15 : CheckBase
         const byte graphNumber = 12;
         byte?[] validDocumentVid = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19 };
         var documentVid = forms[line].DocumentVid_DB;
+        var opCode = forms[line].OperationCode_DB ?? "";
         var valid = validDocumentVid.Contains(documentVid);
         if (!valid)
         {
@@ -869,6 +907,17 @@ public class CheckF15 : CheckBase
                     Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "К коду вида документа 19 необходимо примечание."
                 });
             }
+        } 
+        else if (opCode == "41" && documentVid != 1)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_15",
+                Row = (line + 1).ToString(),
+                Column = "DocumentVid_DB",
+                Value = Convert.ToString(documentVid),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При коде операции 31, вид документа должен быть равен 1."
+            });
         }
         return result;
     }
@@ -904,14 +953,13 @@ public class CheckF15 : CheckBase
         var operationCode = forms[line].OperationCode_DB;
         var operationDate = forms[line].OperationDate_DB;
         var documentDate = forms[line].DocumentDate_DB;
-        DateTime pMid;
-        DateTime pEnd;
-        var valid = true;
+        DateOnly pMid;
+        bool valid;
         if (operationCode == "41")
         {
-            valid = DateTime.TryParse(documentDate, out pMid)
-                    && DateTime.TryParse(operationDate, out var pOper)
-                    && pMid.Date == pOper.Date;
+            valid = DateOnly.TryParse(documentDate, out pMid)
+                    && DateOnly.TryParse(operationDate, out var pOper)
+                    && pMid == pOper;
             if (!valid)
             {
                 result.Add(new CheckError
@@ -926,10 +974,9 @@ public class CheckF15 : CheckBase
         }
         else if (operationCode == "10")
         {
-            valid = DateTime.TryParse(rep.StartPeriod_DB, out var pStart)
-                    && DateTime.TryParse(rep.EndPeriod_DB, out pEnd)
-                    && DateTime.TryParse(documentDate, out pMid)
-                    && pMid >= pStart && pMid <= pEnd;
+            valid = !(DateOnly.TryParse(rep.EndPeriod_DB, out var pEnd)
+                      && DateOnly.TryParse(documentDate, out pMid)
+                      && WorkdaysBetweenDates(pMid, pEnd) <= 10);
             if (!valid)
             {
                 result.Add(new CheckError
@@ -938,15 +985,15 @@ public class CheckF15 : CheckBase
                     Row = (line + 1).ToString(),
                     Column = "DocumentDate_DB",
                     Value = Convert.ToString(documentDate),
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата документа выходит за границы периода"
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Дата окончания отчетного периода превышает дату документа более чем на 10 дней."
                 });
             }
         }
         else
         {
-            valid = DateTime.TryParse(documentDate, out pMid)
-                    && DateTime.TryParse(operationDate, out var pOper)
-                    && pMid.Date <= pOper.Date;
+            valid = DateOnly.TryParse(documentDate, out pMid)
+                    && DateOnly.TryParse(operationDate, out var pOper)
+                    && pMid <= pOper;
             if (!valid)
             {
                 result.Add(new CheckError
@@ -1378,16 +1425,16 @@ public class CheckF15 : CheckBase
     private static List<CheckError> Check_023(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
-        var field_value = forms[line].Subsidy_DB;
-        var valid = !string.IsNullOrWhiteSpace(field_value);
+        var fieldValue = forms[line].Subsidy_DB;
+        var valid = !string.IsNullOrWhiteSpace(fieldValue);
         if (!valid)
         {
             result.Add(new CheckError
             {
                 FormNum = "form_15",
                 Row = (line + 1).ToString(),
-                Column = "StoragePlaceCode_DB",
-                Value = Convert.ToString(field_value),
+                Column = "Subsidy_DB",
+                Value = Convert.ToString(fieldValue),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
             });
         }
@@ -1400,16 +1447,16 @@ public class CheckF15 : CheckBase
     private static List<CheckError> Check_024(List<Form15> forms, int line)
     {
         List<CheckError> result = new();
-        var field_value = forms[line].FcpNumber_DB;
-        var valid = !string.IsNullOrWhiteSpace(field_value);
+        var fieldValue = forms[line].FcpNumber_DB;
+        var valid = !string.IsNullOrWhiteSpace(fieldValue);
         if (!valid)
         {
             result.Add(new CheckError
             {
                 FormNum = "form_15",
                 Row = (line + 1).ToString(),
-                Column = "StoragePlaceCode_DB",
-                Value = Convert.ToString(field_value),
+                Column = "FcpNumber_DB",
+                Value = Convert.ToString(fieldValue),
                 Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Графа должна быть заполнена."
             });
         }
@@ -1460,8 +1507,7 @@ public class CheckF15 : CheckBase
                 Row = duplicateLines,
                 Column = "2 - 15",
                 Value = "",
-                Message = $"Данные граф 2-15 в строках {duplicateLines} продублированы. " +
-                          $"{Environment.NewLine}Следует проверить правильность предоставления данных."
+                Message = $"Данные граф 2-15 в строках {duplicateLines} продублированы. Следует проверить правильность предоставления данных."
             });
         }
         return result;
