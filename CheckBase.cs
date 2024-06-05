@@ -70,12 +70,13 @@ public abstract class CheckBase
     protected static string ConvertStringToExponential(string? str)
     {
         str ??= "";
-        return str.ToLower()
+        return str
+            .ToLower()
+            .Trim()
+            .TrimStart('(')
+            .TrimEnd(')')
             .Replace(".", ",")
-            .Replace("(", "")
-            .Replace(")", "")
-            .Replace('е', 'e')
-            .Trim();
+            .Replace('е', 'e');
     }
 
     #endregion
@@ -237,6 +238,7 @@ public abstract class CheckBase
                 {"unit", worksheet.Cells[i, 6].Text},
                 {"code", worksheet.Cells[i, 8].Text},
                 {"D", worksheet.Cells[i, 15].Text}
+
             });
             if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)
             {
