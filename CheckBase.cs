@@ -26,7 +26,7 @@ public abstract class CheckBase
         var valid = false;
         foreach (var note in notes)
         {
-            if (note.RowNumber_DB == null || forms[line].ReportId == null) continue;
+            if (note.RowNumber_DB == null) continue;
             var noteRowsReal = note.RowNumber_DB.Replace(" ", string.Empty);
             List<int> noteRowsFinalInt = new();
             List<string> noteRowsRealStr = new(noteRowsReal.Split(','));
@@ -81,6 +81,18 @@ public abstract class CheckBase
 
     #endregion
 
+    #region TryParseFloatExtended
+
+    protected static bool TryParseFloatExtended(string? str, out float val)
+    {
+        return float.TryParse(ConvertStringToExponential(str),
+                NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
+                CultureInfo.CreateSpecificCulture("ru-RU"),
+                out val);
+    }
+
+    #endregion
+
     #region CustomComparator
 
     private protected class CustomNullStringWithTrimComparer : IComparer<string>
@@ -108,7 +120,7 @@ public abstract class CheckBase
         var worksheet1 = xls.Workbook.Worksheets["Лист1"];
         var i = 2;
         string name_1, name_2, name_base, name_real;
-        name_base = "аврорий";
+        name_base = "арконий";
         D.Clear();
         while (worksheet1.Cells[i, 1].Text != string.Empty)
         {
@@ -237,7 +249,9 @@ public abstract class CheckBase
                 {"value", worksheet.Cells[i, 5].Text},
                 {"unit", worksheet.Cells[i, 6].Text},
                 {"code", worksheet.Cells[i, 8].Text},
-                {"D", worksheet.Cells[i, 15].Text}
+                {"D", worksheet.Cells[i, 15].Text},
+                {"A_Liquid", worksheet.Cells[i, 18].Text},
+                {"A_Solid", worksheet.Cells[i, 19].Text},
 
             });
             if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)
@@ -254,6 +268,35 @@ public abstract class CheckBase
 
     #region OverdueCalculations
     //вычисление нарушения сроков предоставления отчётов с учетом праздников
+
+    //кол-во дней между датой операции (документа для 10) и окончанием ОП
+
+    protected static readonly Dictionary<string, int> OverduePeriods_RV = new()
+    {
+
+        { "10", 10 },{ "11", 10 },{ "12", 10 },                          { "15", 10 },             { "17", 10 },{ "18", 10 },
+                     { "21", 10 },{ "22", 10 },                          { "25", 10 },             { "27", 10 },{ "28", 10 },{ "29", 10 },
+                     { "31", 10 },{ "32", 10 },                          { "35", 10 },             { "37", 10 },{ "38", 10 },{ "39", 10 },
+                     { "41", 10 },{ "42", 10 },{ "43", 10 },                          { "46", 10 },{ "47", 10 },{ "48", 10 },
+                                               { "53", 10 },{ "54", 10 },                                       { "58", 10 },
+                     { "61", 10 },{ "62", 10 },{ "63", 10 },{ "64", 10 },{ "65", 10 },{ "66", 10 },{ "67", 10 },{ "68", 10 },
+                     { "71", 01 },{ "72", 10 },{ "73", 05 },{ "74", 05 },{ "75", 05 },
+                     { "81", 10 },{ "82", 10 },{ "83", 10 },{ "84", 10 },{ "85", 10 },{ "86", 10 },{ "87", 10 },{ "88", 10 },
+                                                                                                   { "97", 10 },{ "98", 10 },{ "99", 10 }
+    };
+    protected static readonly Dictionary<string, int> OverduePeriods_RAO = new()
+    {
+        { "01", 90 },
+        { "10", 10 },{ "11", 10 },{ "12", 10 },{ "13", 10 },{ "14", 10 },             { "16", 10 },             { "18", 10 },
+                     { "21", 10 },{ "22", 10 },                          { "25", 10 },{ "26", 10 },{ "27", 10 },{ "28", 10 },{ "29", 10 },
+                     { "31", 10 },{ "32", 10 },                          { "35", 10 },{ "36", 10 },{ "37", 10 },{ "38", 10 },{ "39", 10 },
+                     { "41", 10 },{ "42", 10 },{ "43", 10 },{ "44", 10 },{ "45", 10 },                          { "48", 10 },{ "49", 10 },
+                     { "51", 10 },{ "52", 10 },                          { "55", 10 },{ "56", 10 },{ "57", 10 },             { "59", 10 },
+                                               { "63", 10 },{ "64", 10 },                                       { "68", 10 },
+                     { "71", 01 },{ "72", 10 },{ "73", 05 },{ "74", 05 },{ "75", 05 },{ "76", 10 },
+                                                            { "84", 10 },                                       { "88", 10 },
+                                                                                                   { "97", 10 },{ "98", 10 },{ "99", 10 }
+    };
 
     //праздники из года в год
     private static readonly List<DateOnly> HolidaysGeneric = new()
