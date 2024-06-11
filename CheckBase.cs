@@ -250,6 +250,8 @@ public abstract class CheckBase
                 {"unit", worksheet.Cells[i, 6].Text},
                 {"code", worksheet.Cells[i, 8].Text},
                 {"D", worksheet.Cells[i, 15].Text},
+                {"A_Liquid", worksheet.Cells[i, 19].Text},
+                {"A_Solid", worksheet.Cells[i, 20].Text},
 
             });
             if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)

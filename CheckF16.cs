@@ -1069,8 +1069,7 @@ public class CheckF16 : CheckBase
                     }
                 }
             }
-            //disabled until the R has the A values
-            if (false && CodeRAO_1_MatterState is "1" or "2")
+            if (CodeRAO_1_MatterState is "1" or "2")
             {
                 if (radArray.Length > 0)
                 {
