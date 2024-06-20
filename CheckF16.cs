@@ -125,14 +125,15 @@ public class CheckF16 : CheckBase
             errorList.AddRange(Check_013(formsList, currentFormLine));
             errorList.AddRange(Check_014(formsList, currentFormLine));
             errorList.AddRange(Check_015(formsList, currentFormLine));
-            errorList.AddRange(Check_016(formsList, notes, currentFormLine));
+            errorList.AddRange(Check_016(formsList, currentFormLine));
             errorList.AddRange(Check_017(formsList, rep, currentFormLine));
             errorList.AddRange(Check_018_10(formsList, forms10, currentFormLine));
             errorList.AddRange(Check_018_21(formsList, forms10, currentFormLine));
             errorList.AddRange(Check_018_22(formsList, currentFormLine));
             errorList.AddRange(Check_019_01(formsList, currentFormLine));
-            errorList.AddRange(Check_019_21(formsList, currentFormLine));
-            errorList.AddRange(Check_019_22(formsList, currentFormLine));
+            errorList.AddRange(Check_019_21(formsList, notes, currentFormLine));
+            errorList.AddRange(Check_019_22(formsList, notes, currentFormLine));
+            errorList.AddRange(Check_019_29(formsList, notes, currentFormLine));
             errorList.AddRange(Check_020(formsList, currentFormLine));
             errorList.AddRange(Check_021(formsList, currentFormLine));
             errorList.AddRange(Check_022_44(formsList, currentFormLine));
@@ -383,21 +384,119 @@ public class CheckF16 : CheckBase
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var mass = forms[line].Mass_DB;
         var mass_exists = TryParseFloatExtended(mass, out var mass_real);
+        if (!mass_exists || mass_real == 0) return result;
         var activity_a = forms[line].AlphaActivity_DB;
         var activity_b = forms[line].BetaGammaActivity_DB;
+        var activity_t = forms[line].TritiumActivity_DB;
+        var activity_u = forms[line].TransuraniumActivity_DB;
         var activity_a_exists = TryParseFloatExtended(activity_a, out var activity_a_real);
         var activity_b_exists = TryParseFloatExtended(activity_b, out var activity_b_real);
+        var activity_t_exists = TryParseFloatExtended(activity_t, out var activity_t_real);
+        var activity_u_exists = TryParseFloatExtended(activity_u, out var activity_u_real);
         var CodeRAO_1_MatterState = forms[line].CodeRAO_DB.Substring(0, 1);
-        var valid = true;
-        if (mass_exists && CodeRAO_1_MatterState is "1" or "2" && (activity_a_exists || activity_b_exists))
+        var R_column = "";
+        var comparator = new CustomNullStringWithTrimComparer();
+        if (CodeRAO_1_MatterState == "1")
         {
-            if (CodeRAO_1_MatterState == "1")
+            R_column = "A_Liquid";
+        }
+        else if (CodeRAO_1_MatterState == "2")
+        {
+            R_column = "A_Solid";
+        }
+        var valid = true;
+        var success = false;
+        if (comparator.Compare(string.Empty, R_column) != 0)
+        {
+            var nuclids = forms[line].MainRadionuclids_DB.Split(';');
+            for (var i = 0; i < nuclids.Length; i++)
             {
-                valid = (activity_a_exists && activity_a_real / (mass_real * 1e6) >= 0.05f) || (activity_b_exists && activity_b_real / (mass_real * 1e6) >= 0.5f);
+                nuclids[i] = nuclids[i].Trim().ToLower();
             }
-            else if (CodeRAO_1_MatterState == "2")
+            var nuclids_a = new Dictionary<string, Dictionary<string, string>>();
+            var nuclids_b = new Dictionary<string, Dictionary<string, string>>();
+            var nuclids_t = new Dictionary<string, Dictionary<string, string>>();
+            var nuclids_u = new Dictionary<string, Dictionary<string, string>>();
+
+            foreach (string nuclid in nuclids)
             {
-                valid = (activity_a_exists && activity_a_real / (mass_real * 1e6) >= 1.0f) || (activity_b_exists && activity_b_real / (mass_real * 1e6) >= 100.0f);
+                if (R.Any(x => comparator.Compare(x["name"], nuclid) == 0))
+                {
+                    var R_entry = R.First(x => comparator.Compare(x["name"], nuclid) == 0);
+                    switch (R_entry["code"])
+                    {
+                        case "т":
+                            nuclids_t[R_entry["name"]] = R_entry;
+                            break;
+                        case "а":
+                            nuclids_a[R_entry["name"]] = R_entry;
+                            break;
+                        case "б":
+                            nuclids_b[R_entry["name"]] = R_entry;
+                            break;
+                        case "у":
+                            nuclids_u[R_entry["name"]] = R_entry;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            var nuclid_min_a_name = ""; var nuclid_min_a_value = float.MaxValue;
+            var nuclid_min_b_name = ""; var nuclid_min_b_value = float.MaxValue;
+            var nuclid_min_u_name = ""; var nuclid_min_u_value = float.MaxValue;
+            var nuclid_min_t_name = ""; var nuclid_min_t_value = float.MaxValue;
+            foreach (var entry in nuclids_a)
+            {
+                if (TryParseFloatExtended(entry.Value[R_column], out var val) && val != 0 && val < nuclid_min_a_value)
+                {
+                    nuclid_min_a_value = val;
+                    nuclid_min_a_name = entry.Value["name"];
+                }
+            }
+            foreach (var entry in nuclids_b)
+            {
+                if (TryParseFloatExtended(entry.Value[R_column], out var val) && val != 0 && val < nuclid_min_b_value)
+                {
+                    nuclid_min_b_value = val;
+                    nuclid_min_b_name = entry.Value["name"];
+                }
+            }
+            foreach (var entry in nuclids_t)
+            {
+                if (TryParseFloatExtended(entry.Value[R_column], out var val) && val != 0 && val < nuclid_min_t_value)
+                {
+                    nuclid_min_t_value = val;
+                    nuclid_min_t_name = entry.Value["name"];
+                }
+            }
+            foreach (var entry in nuclids_u)
+            {
+                if (TryParseFloatExtended(entry.Value[R_column], out var val) && val != 0 && val < nuclid_min_u_value)
+                {
+                    nuclid_min_u_value = val;
+                    nuclid_min_u_name = entry.Value["name"];
+                }
+            }
+            var A = 0.0f;
+            if (nuclid_min_b_name != "" && activity_b_exists) { A += activity_b_real / (mass_real * 1e6f) / nuclid_min_b_value; success = true; }
+            if (nuclid_min_a_name != "" && activity_a_exists) { A += activity_a_real / (mass_real * 1e6f) / nuclid_min_a_value; success = true; }
+            if (nuclid_min_u_name != "" && activity_u_exists) { A += activity_u_real / (mass_real * 1e6f) / nuclid_min_u_value; success = true; }
+            if (nuclid_min_t_name != "" && activity_t_exists) { A += activity_t_real / (mass_real * 1e6f) / nuclid_min_t_value; success = true; }
+            valid = A > 1.0f;
+        }
+        if (!success)
+        {
+            if (CodeRAO_1_MatterState is "1" or "2" && (activity_a_exists || activity_b_exists))
+            {
+                if (CodeRAO_1_MatterState == "1")
+                {
+                    valid = (activity_a_exists && activity_a_real / (mass_real * 1e6) >= 0.05f) || (activity_b_exists && activity_b_real / (mass_real * 1e6) >= 0.5f);
+                }
+                else if (CodeRAO_1_MatterState == "2")
+                {
+                    valid = (activity_a_exists && activity_a_real / (mass_real * 1e6) >= 1.0f) || (activity_b_exists && activity_b_real / (mass_real * 1e6) >= 100.0f);
+                }
             }
         }
         if (!valid)
@@ -1252,7 +1351,30 @@ public class CheckF16 : CheckBase
             {
                 var storageCode_1 = forms[line].StoragePlaceCode_DB.Substring(0, 1);
                 var storageCodeValids = new string[] { "3", "5", "6" };
-                if (!(storageCodeValids.Contains(storageCode_1) && forms[line].StatusRAO_DB == "1"))
+                var operationCodes = new string[] { "11", "12", "13", "14", "16", "41" };
+                if (operationCodes.Contains(forms[line].OperationCode_DB) && storageCode_1 == "5")
+                {
+                    result.Add(new CheckError
+                    {
+                        FormNum = "form_16",
+                        Row = forms[line].NumberInOrder_DB.ToString(),
+                        Column = "CodeRAO_DB",
+                        Value = CodeRAO_8_RAOClass,
+                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для вновь образованных РАО 8-ой символ кода РАО должен быть равен 0."
+                    });
+                }
+                if (!operationCodes.Contains(forms[line].OperationCode_DB) && storageCodeValids.Contains(storageCode_1) && forms[line].StatusRAO_DB != "1")
+                {
+                    result.Add(new CheckError
+                    {
+                        FormNum = "form_16",
+                        Row = forms[line].NumberInOrder_DB.ToString(),
+                        Column = "StatusRAO_DB",
+                        Value = forms[line].StatusRAO_DB,
+                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте статус РАО."
+                    });
+                }
+                if (!storageCodeValids.Contains(storageCode_1) && forms[line].StatusRAO_DB == "1")
                 {
                     result.Add(new CheckError
                     {
@@ -1267,6 +1389,18 @@ public class CheckF16 : CheckBase
             else if (CodeRAO_8_RAOClass == "9")
             {
                 var storageCode_1 = forms[line].StoragePlaceCode_DB.Substring(0, 1);
+                var operationCodes = new string[] { "11", "12", "13", "14", "16", "41" };
+                if (operationCodes.Contains(forms[line].OperationCode_DB) && storageCode_1 == "5")
+                {
+                    result.Add(new CheckError
+                    {
+                        FormNum = "form_16",
+                        Row = forms[line].NumberInOrder_DB.ToString(),
+                        Column = "StatusRAO_DB",
+                        Value = forms[line].StatusRAO_DB,
+                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для вновь образованных РАО 8-ой символ кода РАО должен быть равен 0."
+                    });
+                }
                 if (!(storageCode_1 == "2" && forms[line].StatusRAO_DB == "1"))
                 {
                     result.Add(new CheckError
@@ -1896,7 +2030,7 @@ public class CheckF16 : CheckBase
     #endregion
 
     #region Check016
-    private static List<CheckError> Check_016(List<Form16> forms, List<Note> notes, int line)
+    private static List<CheckError> Check_016(List<Form16> forms, int line)
     {
         List<CheckError> result = new();
         var documentNumberDB = forms[line].DocumentNumber_DB;
@@ -2119,19 +2253,21 @@ public class CheckF16 : CheckBase
 
     #region Check019_21
 
-    //При определенных кодах операции, код ОКПО перевозчика равен 8/14 цифр
-    private static List<CheckError> Check_019_21(List<Form16> forms, int line)
+    //При определенных кодах операции, код ОКПО перевозчика равен 8/14 цифр, либо прим
+    private static List<CheckError> Check_019_21(List<Form16> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
         string[] applicableOperationCodes =
         {
-            "21","25","26","27","28","29","31","35","36","37","38","39"
+            "21","25","26","27","28","31","35","36","37","38"
         };
         var operationCode = forms[line].OperationCode_DB;
         var transporterOKPO = forms[line].TransporterOKPO_DB;
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
-        var valid = okpoRegex.IsMatch(transporterOKPO);
+        const byte graphNumber = 19;
+        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var valid = okpoRegex.IsMatch(transporterOKPO) || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
             result.Add(new CheckError
@@ -2140,7 +2276,18 @@ public class CheckF16 : CheckBase
                 Row = forms[line].NumberInOrder_DB.ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = Convert.ToString(transporterOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Значение может состоять только из 8 или 14 символов"
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"прим\" без кавычек"
+            });
+        }
+        else if (transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase) && !noteExists)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_16",
+                Row = forms[line].NumberInOrder_DB.ToString(),
+                Column = "TransporterOKPO_DB",
+                Value = Convert.ToString(transporterOKPO),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При указании \"прим\" требуется примечание к ячейке"
             });
         }
         return result;
@@ -2150,8 +2297,8 @@ public class CheckF16 : CheckBase
 
     #region Check019_22
 
-    //Код ОКПО перевозчика состоит из 8/14 чисел или "минобороны"
-    private static List<CheckError> Check_019_22(List<Form16> forms, int line)
+    //Код ОКПО перевозчика состоит из 8/14 чисел или "минобороны" или "прим"
+    private static List<CheckError> Check_019_22(List<Form16> forms, List<Note> notes, int line)
     {
         List<CheckError> result = new();
         string[] applicableOperationCodes = { "22", "32" };
@@ -2159,8 +2306,11 @@ public class CheckF16 : CheckBase
         var transporterOKPO = forms[line].TransporterOKPO_DB;
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         if (!applicableOperationCodes.Contains(operationCode)) return result;
+        const byte graphNumber = 19;
+        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
         var valid = okpoRegex.IsMatch(transporterOKPO)
-                    || transporterOKPO.Equals("минобороны", StringComparison.CurrentCultureIgnoreCase);
+                    || transporterOKPO.Equals("минобороны", StringComparison.CurrentCultureIgnoreCase)
+                    || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
             result.Add(new CheckError
@@ -2169,7 +2319,61 @@ public class CheckF16 : CheckBase
                 Row = forms[line].NumberInOrder_DB.ToString(),
                 Column = "TransporterOKPO_DB",
                 Value = Convert.ToString(transporterOKPO),
-                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"Минобороны\" без кавычек."
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"Минобороны\" без кавычек, либо \"прим\" без кавычек."
+            });
+        }
+        else if (transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase) && !noteExists)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_16",
+                Row = forms[line].NumberInOrder_DB.ToString(),
+                Column = "TransporterOKPO_DB",
+                Value = Convert.ToString(transporterOKPO),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При указании \"прим\" требуется примечание к ячейке"
+            });
+        }
+        return result;
+    }
+
+    #endregion
+
+    #region Check019_29
+
+    //Код ОКПО перевозчика состоит из 8/14 чисел или "-" или "прим"
+    private static List<CheckError> Check_019_29(List<Form16> forms, List<Note> notes, int line)
+    {
+        List<CheckError> result = new();
+        string[] applicableOperationCodes = { "29", "39" };
+        var operationCode = forms[line].OperationCode_DB;
+        var transporterOKPO = forms[line].TransporterOKPO_DB;
+        var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
+        if (!applicableOperationCodes.Contains(operationCode)) return result;
+        const byte graphNumber = 19;
+        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var valid = okpoRegex.IsMatch(transporterOKPO)
+                    || transporterOKPO.Equals("-", StringComparison.CurrentCultureIgnoreCase)
+                    || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
+        if (!valid)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_16",
+                Row = forms[line].NumberInOrder_DB.ToString(),
+                Column = "TransporterOKPO_DB",
+                Value = Convert.ToString(transporterOKPO),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Необходимо указать код ОКПО организации перевозчика, либо \"-\" без кавычек, либо \"прим\" без кавычек."
+            });
+        }
+        else if (transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase) && !noteExists)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = "form_16",
+                Row = forms[line].NumberInOrder_DB.ToString(),
+                Column = "TransporterOKPO_DB",
+                Value = Convert.ToString(transporterOKPO),
+                Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "При указании \"прим\" требуется примечание к ячейке"
             });
         }
         return result;
