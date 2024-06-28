@@ -11,17 +11,96 @@ namespace Client_App.Commands.SyncCommands.CheckForm;
 
 public abstract class CheckBase
 {
-    private protected static Dictionary<string, double> D = new();
-
     private protected static List<Dictionary<string, string>> OKSM = new();
 
     private protected static List<Dictionary<string, string>> R = new();
 
-    private protected static bool DB_Ignore = true;
+    private protected static readonly bool DB_Ignore = true;
+
+    private protected static readonly bool ZRI_Ignore = true;
+
+    private protected static readonly bool MZA_Ignore = true;
+
+    private protected static readonly Regex OkpoRegex = new(@"^\d{8}([0123456789_]\d{5})?$");
+
+    #region CheckRepPeriod
+
+    private protected static List<CheckError> CheckRepPeriod(List<Form1> forms, Report rep)
+    {
+        List<CheckError> result = new();
+        if (!DateOnly.TryParse(rep.EndPeriod_DB, out var endPeriod)) return result;
+        var minOpDate = DateOnly.MinValue;
+        var opCode = string.Empty;
+        var line = 0;
+        string[] operationCodeWithDeadline1 = { "71" };
+        string[] operationCodeWithDeadline5 = { "73", "74", "75" };
+        string[] operationCodeWithDeadline10 =
+        {
+            "11", "12", "15", "17", "18", "21", "22", "25", "27", "28", "29", "31", "32", "35", "37", "38", "39",
+            "41", "42", "43", "46", "47", "48", "53", "54", "58", "61", "62", "63", "64", "65", "66", "67", "68",
+            "72", "81", "82", "83", "84", "85", "86", "87", "88", "97", "98", "99"
+        };
+        var formNum = rep.FormNum_DB.Replace(".", "");
+        foreach (var form in forms)
+        {
+            var curOpCode = form.OperationCode_DB ?? string.Empty;
+            var opDatePlus = DateOnly.MinValue;
+            if (!DateOnly.TryParse(form.OperationDate_DB, out var opDate)) continue;
+            if (operationCodeWithDeadline1.Contains(curOpCode)) opDatePlus = opDate.AddDays(1);
+            if (operationCodeWithDeadline5.Contains(curOpCode)) opDatePlus = opDate.AddDays(5);
+            if (operationCodeWithDeadline10.Contains(curOpCode)) opDatePlus = opDate.AddDays(10);
+            if (opDatePlus > minOpDate)
+            {
+                minOpDate = opDate;
+                opCode = form.OperationCode_DB ?? string.Empty;
+                line = form.NumberInOrder_DB;
+            }
+        }
+        if (operationCodeWithDeadline10.Contains(opCode) && WorkdaysBetweenDates(minOpDate, endPeriod) > 10)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = $"form_{formNum}",
+                Row = (line + 1).ToString(),
+                Column = "OperationDate_DB",
+                Value = forms[line].OperationDate_DB,
+                Message = $"Дата операции {minOpDate} превышает дату окончания отчетного периода {rep.EndPeriod_DB} " +
+                          $"более чем на 10 рабочих дней."
+            });
+        }
+        else if (operationCodeWithDeadline5.Contains(opCode) && WorkdaysBetweenDates(minOpDate, endPeriod) > 5)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = $"form_{formNum}",
+                Row = (line + 1).ToString(),
+                Column = "OperationDate_DB",
+                Value = forms[line].OperationDate_DB,
+                Message = $"Дата операции {minOpDate} превышает дату окончания отчетного периода {rep.EndPeriod_DB} " +
+                          $"более чем на 5 рабочих дней."
+            });
+        }
+        else if (operationCodeWithDeadline1.Contains(opCode) && WorkdaysBetweenDates(minOpDate, endPeriod) > 1)
+        {
+            result.Add(new CheckError
+            {
+                FormNum = $"form_{formNum}",
+                Row = (line + 1).ToString(),
+                Column = "OperationDate_DB",
+                Value = forms[line].OperationDate_DB,
+                Message = $"Дата операции {minOpDate} превышает дату окончания отчетного периода {rep.EndPeriod_DB} " +
+                          $"более чем на 1 рабочий день."
+            });
+        }
+
+        return result;
+    }
+
+    #endregion
 
     #region CheckNotePresence
 
-    private protected static bool CheckNotePresence(List<Form> forms, List<Note> notes, int line, byte graphNumber)
+    private protected static bool CheckNotePresence(List<Note> notes, int line, byte graphNumber)
     {
         var valid = false;
         foreach (var note in notes)
@@ -81,18 +160,6 @@ public abstract class CheckBase
 
     #endregion
 
-    #region TryParseFloatExtended
-
-    protected static bool TryParseFloatExtended(string? str, out float val)
-    {
-        return float.TryParse(ConvertStringToExponential(str),
-                NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
-                CultureInfo.CreateSpecificCulture("ru-RU"),
-                out val);
-    }
-
-    #endregion
-
     #region CustomComparator
 
     private protected class CustomNullStringWithTrimComparer : IComparer<string>
@@ -109,62 +176,33 @@ public abstract class CheckBase
 
     #region LoadDictionaries
 
-    #region DFromFile
-
-    private protected static void D_Populate_From_File(string file_address)
+    private protected static void LoadDictionaries()
     {
-        ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-        if (!File.Exists(file_address)) return;
-        FileInfo excel_import_file = new(file_address);
-        var xls = new ExcelPackage(excel_import_file);
-        var worksheet1 = xls.Workbook.Worksheets["Лист1"];
-        var i = 2;
-        string name_1, name_2, name_base, name_real;
-        name_base = "арконий";
-        D.Clear();
-        while (worksheet1.Cells[i, 1].Text != string.Empty)
+        if (OKSM.Count == 0)
         {
-            name_1 = worksheet1.Cells[i, 2].Text;
-            name_2 = worksheet1.Cells[i, 3].Text;
-            if (name_1 != string.Empty)
-            {
-                name_base = name_1.ToLower();
-            }
-            if (name_2.Contains('-'))
-            {
-                if (name_2.Contains('+'))
-                {
-                    name_real = name_base + name_2[name_2.IndexOf('-')..name_2.IndexOf('+')];
-                }
-                else
-                {
-                    name_real = name_base + name_2[name_2.IndexOf('-')..];
-                }
-                var valueBase = worksheet1.Cells[i, 4].Text;
-                double valueReal;
-                if (valueBase.Contains("Неограниченно"))
-                {
-                    valueReal = double.MaxValue;
-                }
-                else
-                {
-                    valueReal = 1e12 * double.Parse(valueBase[..6].Replace(" ", ""), NumberStyles.Float);
-                }
-                D[name_real] = valueReal;
-                if (name_real.Contains("йод"))
-                {
-                    D[name_real.Replace('й', 'и')] = valueReal;
-                }
-                else if (name_real.Contains("иод"))
-                {
-                    D[name_real.Replace('и', 'й')] = valueReal;
-                }
-            }
-            i++;
+#if DEBUG
+            OKSM_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "oksm.xlsx"));
+#else
+            OKSM_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"oksm.xlsx"));
+#endif
+        }
+        if (R.Count == 0)
+        {
+#if DEBUG
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "R.xlsx"));
+#else
+            R_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"R.xlsx"));
+#endif
+        }
+        if (HolidaysSpecific.Count == 0)
+        {
+#if DEBUG
+            Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\")), "data", "Spravochniki", "Holidays.xlsx"));
+#else
+            Holidays_Populate_From_File(Path.Combine(Path.GetFullPath(AppContext.BaseDirectory), "data", "Spravochniki", $"Holidays.xlsx"));
+#endif
         }
     }
-
-    #endregion
 
     #region  HolidaysFromFile
 
@@ -207,7 +245,7 @@ public abstract class CheckBase
 
     private protected static void OKSM_Populate_From_File(string fileAddress)
     {
-        ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         if (!File.Exists(fileAddress)) return;
         FileInfo excel_import_file = new(fileAddress);
         var xls = new ExcelPackage(excel_import_file);
@@ -250,9 +288,9 @@ public abstract class CheckBase
                 {"unit", worksheet.Cells[i, 6].Text},
                 {"code", worksheet.Cells[i, 8].Text},
                 {"D", worksheet.Cells[i, 15].Text},
+                {"MZA", worksheet.Cells[i, 17].Text},
                 {"A_Solid", worksheet.Cells[i, 22].Text},
-                {"A_Liquid", worksheet.Cells[i, 23].Text},
-
+                {"A_Liquid", worksheet.Cells[i, 23].Text}
             });
             if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)
             {
@@ -284,6 +322,7 @@ public abstract class CheckBase
                      { "81", 10 },{ "82", 10 },{ "83", 10 },{ "84", 10 },{ "85", 10 },{ "86", 10 },{ "87", 10 },{ "88", 10 },
                                                                                                    { "97", 10 },{ "98", 10 },{ "99", 10 }
     };
+
     protected static readonly Dictionary<string, int> OverduePeriods_RAO = new()
     {
         { "01", 90 },
@@ -356,6 +395,18 @@ public abstract class CheckBase
             }
         }
         return result;
+    }
+
+    #endregion
+
+    #region TryParseFloatExtended
+
+    protected static bool TryParseFloatExtended(string? str, out float val)
+    {
+        return float.TryParse(ConvertStringToExponential(str),
+            NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands | NumberStyles.AllowLeadingSign,
+            CultureInfo.CreateSpecificCulture("ru-RU"),
+            out val);
     }
 
     #endregion
