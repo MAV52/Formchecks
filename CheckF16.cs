@@ -284,7 +284,7 @@ public class CheckF16 : CheckBase
         var applicableOperationCodes = new string[] { "29", "39", "49", "59", "97", "98", "99" };
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 2;
-        var valid = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var valid = CheckNotePresence(notes, line, graphNumber);
         if (!valid)
         {
             result.Add(new CheckError
@@ -690,7 +690,7 @@ public class CheckF16 : CheckBase
             }
         }
         const byte graphNumber = 4;
-        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var noteExists = CheckNotePresence(notes, line, graphNumber);
 
         #endregion
 
@@ -2266,7 +2266,7 @@ public class CheckF16 : CheckBase
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         const byte graphNumber = 19;
-        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var noteExists = CheckNotePresence(notes, line, graphNumber);
         var valid = okpoRegex.IsMatch(transporterOKPO) || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
         if (!valid)
         {
@@ -2307,7 +2307,7 @@ public class CheckF16 : CheckBase
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 19;
-        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var noteExists = CheckNotePresence(notes, line, graphNumber);
         var valid = okpoRegex.IsMatch(transporterOKPO)
                     || transporterOKPO.Equals("минобороны", StringComparison.CurrentCultureIgnoreCase)
                     || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
@@ -2350,7 +2350,7 @@ public class CheckF16 : CheckBase
         var okpoRegex = new Regex(@"^\d{8}([0123456789_]\d{5})?$");
         if (!applicableOperationCodes.Contains(operationCode)) return result;
         const byte graphNumber = 19;
-        var noteExists = CheckNotePresence(new List<Form>(forms), notes, line, graphNumber);
+        var noteExists = CheckNotePresence(notes, line, graphNumber);
         var valid = okpoRegex.IsMatch(transporterOKPO)
                     || transporterOKPO.Equals("-", StringComparison.CurrentCultureIgnoreCase)
                     || transporterOKPO.Replace(".", "").Equals("прим", StringComparison.CurrentCultureIgnoreCase);
