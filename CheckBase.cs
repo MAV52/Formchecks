@@ -289,8 +289,10 @@ public abstract class CheckBase
                 {"code", worksheet.Cells[i, 8].Text},
                 {"D", worksheet.Cells[i, 15].Text},
                 {"MZA", worksheet.Cells[i, 17].Text},
-                {"A_Solid", worksheet.Cells[i, 22].Text},
-                {"A_Liquid", worksheet.Cells[i, 23].Text}
+                {"A_Solid", worksheet.Cells[i, 18].Text},
+                {"A_Liquid", worksheet.Cells[i, 20].Text},
+                {"OSPORB_Solid", worksheet.Cells[i, 22].Text},
+                {"OSPORB_Liquid", worksheet.Cells[i, 23].Text}
             });
             if (string.IsNullOrWhiteSpace(R[^1]["D"]) || !double.TryParse(R[^1]["D"], out var val1) || val1 < 0)
             {

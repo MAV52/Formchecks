@@ -655,6 +655,7 @@ public class CheckF16 : CheckBase
 
         #region data fetch
 
+        var operationCode = forms[line].OperationCode_DB;
         var radionuclids = forms[line].MainRadionuclids_DB;
         var radArray = radionuclids.Replace(" ", string.Empty).ToLower()
             .Replace(" ", "")
@@ -739,6 +740,10 @@ public class CheckF16 : CheckBase
         var CodeRAO_8_Valid = CodeRAO_8_Allowed.Contains(CodeRAO_8_RAOClass);
         var CodeRAO_910_Valid = CodeRAO_910_Allowed.Contains(CodeRAO_910_TypeCode);
         var CodeRAO_11_Valid = CodeRAO_11_Allowed.Contains(CodeRAO_11_Flammability);
+
+        var RecyclingTypes = new string[] { "11","12","13","14","15","16","17","18","19",
+                                       "20","21","22","23","24","25","26","27","28","29",
+                                       "30","31","32","33","34","35","36","37","38","39" };
 
         #endregion
 
@@ -1071,27 +1076,72 @@ public class CheckF16 : CheckBase
         else
         {
             var nuclears = new string[] { "плутоний", "уран-233", "уран-235", "уран-238", "нептуний-237", "америций-241", "америций-243", "калифорний-252", "торий", "литий-6", "тритий" };
-            if (CodeRAO_4_HasNuclears == "2" && !radArray.Any(x => nuclears.Contains(x.ToLower())))
+            var operations_12 = new string[] { "12" };
+            var operations_11 = new string[] { "11", "13", "14", "16", "41" };
+            bool nuclears_exist = radArray.Any(x => nuclears.Contains(x.ToLower()));
+            if (CodeRAO_4_HasNuclears == "1")
             {
-                result.Add(new CheckError
+                if (operations_12.Contains(operationCode))
                 {
-                    FormNum = "form_16",
-                    Row = forms[line].NumberInOrder_DB.ToString(),
-                    Column = "CodeRAO_DB",
-                    Value = CodeRAO_4_HasNuclears,
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО равен 2 только при указании радионуклидов, которые могут быть отнесены к ЯМ."
-                });
+                    result.Add(new CheckError
+                    {
+                        FormNum = "form_16",
+                        Row = forms[line].NumberInOrder_DB.ToString(),
+                        Column = "CodeRAO_DB",
+                        Value = CodeRAO_4_HasNuclears,
+                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО не может быть равен 1 при коде операции 12."
+                    });
+                }
+                else if (operations_11.Contains(operationCode))
+                {
+                    //anything is allowed
+                }
+                else
+                {
+                    //anything is allowed
+                }
             }
-            else if (CodeRAO_4_HasNuclears == "1" && radArray.Any(x => nuclears.Contains(x.ToLower())))
+            else if (CodeRAO_4_HasNuclears == "2")
             {
-                result.Add(new CheckError
+                if (operations_12.Contains(operationCode))
                 {
-                    FormNum = "form_16",
-                    Row = forms[line].NumberInOrder_DB.ToString(),
-                    Column = "CodeRAO_DB",
-                    Value = CodeRAO_4_HasNuclears,
-                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО равен 1 только при отсутствии радионуклидов, которые могут быть отнесены к ЯМ."
-                });
+                    if (!nuclears_exist)
+                    {
+                        result.Add(new CheckError
+                        {
+                            FormNum = "form_16",
+                            Row = forms[line].NumberInOrder_DB.ToString(),
+                            Column = "CodeRAO_DB",
+                            Value = CodeRAO_4_HasNuclears,
+                            Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО может быть равен 2 при коде операции 12 только при указании радионуклидов, которые могут быть отнесены к ЯМ."
+                        });
+                    }
+                }
+                else if (operations_11.Contains(operationCode))
+                {
+                    result.Add(new CheckError
+                    {
+                        FormNum = "form_16",
+                        Row = forms[line].NumberInOrder_DB.ToString(),
+                        Column = "CodeRAO_DB",
+                        Value = CodeRAO_4_HasNuclears,
+                        Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО не может быть равен 2 при кодах операции 11, 13, 14, 16 и 41."
+                    });
+                }
+                else
+                {
+                    if (!nuclears_exist)
+                    {
+                        result.Add(new CheckError
+                        {
+                            FormNum = "form_16",
+                            Row = forms[line].NumberInOrder_DB.ToString(),
+                            Column = "CodeRAO_DB",
+                            Value = CodeRAO_4_HasNuclears,
+                            Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "4-ый символ кода РАО может быть равен 2 при данном коде операции только при указании радионуклидов, которые могут быть отнесены к ЯМ."
+                        });
+                    }
+                }
             }
         }
         #endregion
@@ -1111,7 +1161,7 @@ public class CheckF16 : CheckBase
         }
         else
         {
-            if (CodeRAO_5_HalfLife != "2" && (int)halflife_max <= 31)
+            if (CodeRAO_5_HalfLife != "2" && (long)halflife_max <= 31)
             {
                 result.Add(new CheckError
                 {
@@ -1122,7 +1172,7 @@ public class CheckF16 : CheckBase
                     Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + $"По данным, представленным в строке {forms[line].NumberInOrder_DB}, 5-ый символ кода РАО (период полураспада) должен быть равен 2."
                 });
             }
-            else if (CodeRAO_5_HalfLife != "1" && (int)halflife_max > 31)
+            else if (CodeRAO_5_HalfLife != "1" && (long)halflife_max > 31)
             {
                 result.Add(new CheckError
                 {
@@ -1189,13 +1239,27 @@ public class CheckF16 : CheckBase
                             if (nuclid_activity > 0.0f)
                             {
                                 var t = -1.0f;
-                                if (CodeRAO_1_MatterState == "1" && TryParseFloatExtended(nuclid_data["A_Liquid"], out A))
+                                if (CodeRAO_1_MatterState == "1" && TryParseFloatExtended(nuclid_data["OSPORB_Liquid"], out A))
                                 {
-                                    t = T / unit_adjustment * (float)(Math.Log(nuclid_activity / (nuclid_mass_real * 1e3) / (A * 0.1f)) / 1.44f/*Math.Log(2.0)*/);
+                                    if (A == 0)
+                                    {
+                                        t = float.MaxValue;
+                                    }
+                                    else
+                                    {
+                                        t = (T / unit_adjustment) * (float)(Math.Log(nuclid_activity / (nuclid_mass_real * 1e6) / (A * 0.1f)) * 1.44f/*1 / Math.Log(2.0)*/);
+                                    }
                                 }
-                                else if (CodeRAO_1_MatterState == "2" && TryParseFloatExtended(nuclid_data["A_Solid"], out A))
+                                else if (CodeRAO_1_MatterState == "2" && TryParseFloatExtended(nuclid_data["OSPORB_Solid"], out A))
                                 {
-                                    t = T / unit_adjustment * (float)(Math.Log(nuclid_activity / (nuclid_mass_real * 1e3) / A) / 1.44f/*Math.Log(2.0)*/);
+                                    if (A == 0)
+                                    {
+                                        t = float.MaxValue;
+                                    }
+                                    else
+                                    {
+                                        t = (T / unit_adjustment) * (float)(Math.Log(nuclid_activity / (nuclid_mass_real * 1e6) / A) * 1.44f/*1 / Math.Log(2.0)*/);
+                                    }
                                 }
                                 expectedPeriod = Math.Max(t, expectedPeriod);
                             }
@@ -1262,6 +1326,17 @@ public class CheckF16 : CheckBase
                     Column = "CodeRAO_DB",
                     Value = CodeRAO_7_RecycleMethod,
                     Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Для жидких РАО 7-ой символ кода РАО не может быть равным 1, 2, 3, 4, 9."
+                });
+            }
+            else if (CodeRAO_1_MatterState == "2" && RecyclingTypes.Contains(CodeRAO_910_TypeCode) && CodeRAO_7_RecycleMethod is "0" or "1")
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_16",
+                    Row = forms[line].NumberInOrder_DB.ToString(),
+                    Column = "CodeRAO_DB",
+                    Value = CodeRAO_7_RecycleMethod,
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Сочетание агрегатного состояния 2 (твердые РАО) и кодов типа РАО 11-39 (жидкие РАО) возможно только для кодов переработки (7-ой символ кода РАО) 2-9."
                 });
             }
             else if (forms[line].OperationCode_DB == "56")
@@ -1751,7 +1826,6 @@ public class CheckF16 : CheckBase
         }
         return result;
     }
-
     #endregion
 
     #region Check010
@@ -1764,7 +1838,21 @@ public class CheckF16 : CheckBase
             .Replace(" ", "")
             .Replace(',', ';')
             .Split(';');
-        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "т"))) return result;
+        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "т")))
+        {
+            if (TryParseFloatExtended(activity.Trim(), out var val))
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_16",
+                    Row = forms[line].NumberInOrder_DB.ToString(),
+                    Column = "TritiumActivity_DB",
+                    Value = Convert.ToString(forms[line].TritiumActivity_DB),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте перечень основных радионуклидов: указана суммарная активность для трития, но тритий не приведен в перечне радионуклидов."
+                });
+            }
+            return result;
+        }
         var activityReal = 1.0;
         if (!double.TryParse(ConvertStringToExponential(activity),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
@@ -1819,7 +1907,21 @@ public class CheckF16 : CheckBase
             .Replace(" ", "")
             .Replace(',', ';')
             .Split(';');
-        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "б"))) return result;
+        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "б")))
+        {
+            if (TryParseFloatExtended(activity.Trim(), out var val))
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_16",
+                    Row = forms[line].NumberInOrder_DB.ToString(),
+                    Column = "TritiumActivity_DB",
+                    Value = Convert.ToString(forms[line].TritiumActivity_DB),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте перечень основных радионуклидов: указана суммарная активность для бета-, гамма-излучающих радионуклидов, но бета-, гамма-излучающие радионуклиды не приведены в перечне радионуклидов."
+                });
+            }
+            return result;
+        }
         var activityReal = 1.0;
         if (!double.TryParse(ConvertStringToExponential(activity),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
@@ -1875,7 +1977,21 @@ public class CheckF16 : CheckBase
             .Replace(" ", "")
             .Replace(',', ';')
             .Split(';');
-        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "а"))) return result;
+        if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "а")))
+        {
+            if (TryParseFloatExtended(activity.Trim(), out var val))
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_16",
+                    Row = forms[line].NumberInOrder_DB.ToString(),
+                    Column = "TritiumActivity_DB",
+                    Value = Convert.ToString(forms[line].TritiumActivity_DB),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте перечень основных радионуклидов: указана суммарная активность для альфа-излучающих радионуклидов, но альфа-излучающие радионуклиды не приведены в перечне радионуклидов."
+                });
+            }
+            return result;
+        }
         var activityReal = 1.0;
         if (!double.TryParse(ConvertStringToExponential(activity),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
@@ -1932,7 +2048,20 @@ public class CheckF16 : CheckBase
             .Replace(',', ';')
             .Split(';');
         if (!radArray.Any(rad => R.Any(phEntry => phEntry["name"] == rad && phEntry["code"] == "у")))
+        {
+            if (TryParseFloatExtended(activity.Trim(), out var val))
+            {
+                result.Add(new CheckError
+                {
+                    FormNum = "form_16",
+                    Row = forms[line].NumberInOrder_DB.ToString(),
+                    Column = "TritiumActivity_DB",
+                    Value = Convert.ToString(forms[line].TritiumActivity_DB),
+                    Message = $"Проверка {MethodBase.GetCurrentMethod()?.Name.Replace("Check_", "").TrimStart('0')} - " + "Проверьте перечень основных радионуклидов: указана суммарная активность для трансурановых радионуклидов, но трансуравновые радионуклиды не приведены в перечне радионуклидов."
+                });
+            }
             return result;
+        }
         if (!double.TryParse(ConvertStringToExponential(activity),
                 NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowThousands,
                 CultureInfo.CreateSpecificCulture("ru-RU"),
@@ -2708,7 +2837,7 @@ public class CheckF16 : CheckBase
     private static List<CheckError> Check_028(List<Form16> forms)
     {
         List<CheckError> result = new();
-        HashSet<int> duplicatesLinesSet = new();
+        Dictionary<int, HashSet<int>> duplicatesLinesSubset = new();
         var comparator = new CustomNullStringWithTrimComparer();
         for (var i = 0; i < forms.Count; i++)
         {
@@ -2734,13 +2863,16 @@ public class CheckF16 : CheckBase
                                   && comparator.Compare(formToCompare.DocumentDate_DB, currentForm.DocumentDate_DB) == 0
                                   && comparator.Compare(formToCompare.ProviderOrRecieverOKPO_DB, currentForm.ProviderOrRecieverOKPO_DB) == 0;
                 if (!isDuplicate) continue;
-                duplicatesLinesSet.Add(i + 1);
-                duplicatesLinesSet.Add(j + 1);
+                if (!duplicatesLinesSubset.ContainsKey(i + 1))
+                {
+                    duplicatesLinesSubset[i + 1] = [i + 1];
+                }
+                duplicatesLinesSubset[i + 1].Add(j + 1);
             }
         }
-        var duplicateLines = string.Join(", ", duplicatesLinesSet.Order());
-        if (duplicatesLinesSet.Count != 0)
+        foreach (var subset in duplicatesLinesSubset)
         {
+            var duplicateLines = string.Join(", ", subset.Value.Order());
             result.Add(new CheckError
             {
                 FormNum = "form_16",
